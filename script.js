@@ -8,7 +8,7 @@ const urlParams = new URLSearchParams(window.location.search);
 // ==========================================
 const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     ? 'http://localhost:3000'  // Локальная разработка
-    : 'https://api.your-domain.com'; // 🔥 ЗАМЕНИ НА АДРЕС ТВОЕГО СЕРВЕРА ПОЗЖЕ
+    : 'http://194.67.121.79:3000'; // Твой VPS сервер
 
 console.log(`🌐 API URL: ${API_URL}`);
 
