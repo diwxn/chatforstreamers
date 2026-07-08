@@ -1,0 +1,3071 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Twitch Chat Overlay - Настройка</title>
+    <style>
+        /* ==========================================
+           ОСНОВНЫЕ СТИЛИ
+           ========================================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0e0e10;
+            --bg-secondary: #18181b;
+            --bg-card: #1f1f23;
+            --bg-input: #26262c;
+            --border-color: #3f3f46;
+            --text-primary: #efeff1;
+            --text-secondary: #adadb8;
+            --accent: #a970ff;
+            --accent-hover: #b481ff;
+            --accent-glow: rgba(169, 112, 255, 0.3);
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            --radius: 10px;
+            --radius-sm: 6px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 12px;
+        }
+
+        .app {
+            width: 100%;
+            max-width: 1400px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: var(--bg-secondary);
+            border-radius: var(--radius);
+            padding: 16px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+
+        /* ==========================================
+           СТАТИСТИКА (УВЕЛИЧЕННАЯ)
+           ========================================== */
+        .stats-panel {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            width: 100%;
+        }
+
+        .stats-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .stats-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .stats-live {
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .stats-live.live {
+            color: #4caf50;
+            animation: livePulse 1.5s ease-in-out infinite;
+        }
+
+        .stats-live.offline {
+            color: #ef5350;
+            animation: none;
+        }
+
+        .stats-live.loading {
+            color: #ffa726;
+            animation: livePulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes livePulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+        }
+
+        .stat-card {
+            background: var(--bg-input);
+            border-radius: var(--radius-sm);
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid var(--border-color);
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            border-color: var(--accent);
+        }
+
+        .stat-icon {
+            font-size: 18px;
+            flex-shrink: 0;
+            line-height: 1;
+        }
+
+        .stat-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .stat-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1.2;
+        }
+
+        .stat-label {
+            font-size: 10px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .stats-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stats-actions button {
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-secondary);
+            padding: 4px 12px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .stats-actions button:hover {
+            border-color: var(--accent);
+            color: var(--text-primary);
+        }
+
+        .stats-actions button.danger {
+            background: #ef5350;
+            border-color: #ef5350;
+            color: white;
+        }
+
+        .stats-actions button.danger:hover {
+            background: #d32f2f;
+        }
+
+        /* ==========================================
+           ОСНОВНАЯ СЕТКА
+           ========================================== */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 10px;
+            width: 100%;
+        }
+
+        /* ==========================================
+           НАСТРОЙКИ (АККОРДЕОН)
+           ========================================== */
+        .settings-panel {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 10px 14px;
+            border: 1px solid var(--border-color);
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .settings-panel::-webkit-scrollbar {
+            width: 3px;
+        }
+
+        .settings-panel::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 2px;
+        }
+
+        .settings-panel h2 {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .settings-panel h2 .icon {
+            font-size: 16px;
+        }
+
+        .accordion-section {
+            margin-bottom: 6px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 6px;
+        }
+
+        .accordion-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .accordion-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            padding: 4px 0;
+            user-select: none;
+            transition: var(--transition);
+        }
+
+        .accordion-header:hover {
+            color: var(--text-primary);
+        }
+
+        .accordion-header .section-title {
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+        }
+
+        .accordion-header .arrow {
+            font-size: 10px;
+            color: var(--text-secondary);
+            transition: transform 0.3s;
+        }
+
+        .accordion-header .arrow.collapsed {
+            transform: rotate(-90deg);
+        }
+
+        .accordion-body {
+            overflow: hidden;
+            max-height: 500px;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+            padding-top: 4px;
+        }
+
+        .accordion-body.collapsed {
+            max-height: 0;
+            padding-top: 0;
+        }
+
+        .form-group {
+            margin-bottom: 6px;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 10px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 2px;
+        }
+
+        .form-group .input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .form-group input[type="text"] {
+            flex: 1;
+            padding: 4px 8px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-size: 12px;
+            transition: var(--transition);
+            outline: none;
+        }
+
+        .form-group input[type="text"]:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px var(--accent-glow);
+        }
+
+        .form-group input[type="range"] {
+            flex: 1;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 3px;
+            background: var(--border-color);
+            border-radius: 2px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .form-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            box-shadow: 0 0 8px var(--accent-glow);
+        }
+
+        .form-group input[type="range"]::-moz-range-thumb {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            border: none;
+        }
+
+        .range-value {
+            min-width: 24px;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 2px 0;
+            cursor: pointer;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 13px;
+            height: 13px;
+            accent-color: var(--accent);
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .checkbox-group label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            margin-bottom: 0;
+        }
+
+        .settings-select {
+            width: 100%;
+            padding: 4px 6px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            color: white;
+            font-size: 11px;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .settings-select:focus {
+            border-color: var(--accent);
+        }
+
+        /* ==========================================
+           КАРТОЧКА КАНАЛА (С ОБВОДКОЙ)
+           ========================================== */
+        .channel-card {
+            background: var(--bg-input);
+            border-radius: var(--radius-sm);
+            padding: 8px 12px;
+            margin-top: 4px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            border: 2px solid transparent;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .channel-card.visible {
+            display: flex;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .channel-card.found {
+            border-color: #4caf50;
+            box-shadow: 0 0 16px rgba(76, 175, 80, 0.25);
+        }
+
+        .channel-card.error {
+            border-color: #ef5350;
+            box-shadow: 0 0 16px rgba(244, 67, 54, 0.25);
+        }
+
+        .channel-card .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--bg-secondary);
+            flex-shrink: 0;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .channel-card .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .channel-card .info .name {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+            line-height: 1.2;
+        }
+
+        .channel-card .info .login {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+
+        .channel-card .status-badge {
+            font-size: 10px;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-weight: 500;
+            flex-shrink: 0;
+        }
+
+        .channel-card .status-badge.loading {
+            background: rgba(255, 165, 0, 0.2);
+            color: #ffa726;
+        }
+
+        .channel-card .status-badge.found {
+            background: rgba(76, 175, 80, 0.2);
+            color: #66bb6a;
+        }
+
+        .channel-card .status-badge.error {
+            background: rgba(244, 67, 54, 0.2);
+            color: #ef5350;
+        }
+
+        /* ==========================================
+           ПРЕВЬЮ
+           ========================================== */
+        .preview-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .preview-panel .preview-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .preview-panel .preview-header-row h2 {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin: 0;
+        }
+
+        .preview-panel .preview-header-row .preview-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .preview-panel .preview-header-row button {
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-secondary);
+            padding: 4px 12px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .preview-panel .preview-header-row button:hover {
+            border-color: var(--accent);
+            color: var(--text-primary);
+        }
+
+        .preview-panel .preview-header-row button.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+
+        .preview-container {
+            flex: 1;
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            position: relative;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .preview-container .preview-header {
+            padding: 4px 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .preview-container .preview-header .dot {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #4caf50;
+            margin-right: 4px;
+            animation: pulse 2s infinite;
+        }
+
+        .preview-container .preview-header .label {
+            font-size: 10px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .preview-container .preview-header .stats {
+            font-size: 10px;
+            color: var(--text-secondary);
+        }
+
+        .preview-chat {
+            flex: 1;
+            padding: 6px 8px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column-reverse;
+            gap: 3px;
+            background: radial-gradient(ellipse at center, rgba(169, 112, 255, 0.05), transparent);
+            min-height: 200px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .preview-chat::-webkit-scrollbar {
+            width: 3px;
+        }
+
+        .preview-chat::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 2px;
+        }
+
+        .preview-chat .msg {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            line-height: 1.3;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            flex-wrap: wrap;
+            flex-shrink: 0;
+        }
+
+        .preview-chat .msg .time {
+            color: #888;
+            font-size: 0.65em;
+            margin-right: 2px;
+            flex-shrink: 0;
+        }
+
+        .preview-chat .msg .badge {
+            width: 14px;
+            height: 14px;
+            vertical-align: middle;
+            flex-shrink: 0;
+            border-radius: 3px;
+            display: inline-block;
+        }
+
+        .preview-chat .msg .username {
+            font-weight: 700;
+            flex-shrink: 0;
+            font-size: 0.95em;
+        }
+
+        .preview-chat .msg .emote {
+            height: 1.1em;
+            width: auto;
+            vertical-align: middle;
+            display: inline-block;
+        }
+
+        .preview-chat .msg .text-content {
+            display: inline;
+            word-break: break-word;
+        }
+
+        .preview-chat .msg.broadcaster {
+            border-left: 3px solid #ff0000 !important;
+            padding-left: 8px !important;
+        }
+
+        .preview-chat .msg.moderator {
+            border-left: 3px solid #00ff00 !important;
+            padding-left: 8px !important;
+        }
+
+        .preview-chat .msg.vip {
+            border-left: 3px solid #ff00ff !important;
+            padding-left: 8px !important;
+        }
+
+        .preview-chat .msg.activity {
+            border: 1px solid transparent !important;
+            border-radius: 6px !important;
+            padding: 3px 8px !important;
+        }
+
+        .preview-chat .msg.raid {
+            border-color: #4caf50 !important;
+        }
+
+        .preview-chat .msg.first-message {
+            border-color: #f06292 !important;
+        }
+
+        .preview-chat .msg.gift-sub {
+            border-color: #ffd700 !important;
+            opacity: 0.9 !important;
+        }
+
+        .preview-chat .msg.vip-assign {
+            border-color: #ffb300 !important;
+        }
+
+        .preview-chat .msg.birthday {
+            border-color: #ff8a65 !important;
+        }
+
+        .preview-chat .msg.mod-assign {
+            border-color: #42a5f5 !important;
+        }
+
+        .preview-empty {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            font-size: 12px;
+            gap: 4px;
+        }
+
+        .preview-empty .icon {
+            font-size: 28px;
+            opacity: 0.3;
+        }
+
+        /* ==========================================
+           РЕАЛЬНЫЙ ЧАТ
+           ========================================== */
+        #realChatContainer {
+            display: none;
+            flex: 1;
+            padding: 6px 8px;
+            overflow-y: auto;
+            flex-direction: column;
+            gap: 3px;
+            background: radial-gradient(ellipse at center, rgba(169, 112, 255, 0.05), transparent);
+            min-height: 200px;
+            max-height: 500px;
+        }
+
+        #realChatContainer::-webkit-scrollbar {
+            width: 3px;
+        }
+
+        #realChatContainer::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 2px;
+        }
+
+        #realChatMessages {
+            display: flex;
+            flex-direction: column-reverse;
+            gap: 3px;
+            flex: 1;
+        }
+
+        #realChatMessages .msg {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            line-height: 1.3;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            flex-wrap: wrap;
+            flex-shrink: 0;
+        }
+
+        #realChatMessages .msg .time {
+            color: #888;
+            font-size: 0.65em;
+            margin-right: 2px;
+            flex-shrink: 0;
+        }
+
+        #realChatMessages .msg .badge {
+            width: 14px;
+            height: 14px;
+            vertical-align: middle;
+            flex-shrink: 0;
+            border-radius: 3px;
+            display: inline-block;
+        }
+
+        #realChatMessages .msg .username {
+            font-weight: 700;
+            flex-shrink: 0;
+            font-size: 0.95em;
+        }
+
+        #realChatMessages .msg .emote {
+            height: 1.1em;
+            width: auto;
+            vertical-align: middle;
+            display: inline-block;
+        }
+
+        #realChatMessages .msg.broadcaster {
+            border-left: 3px solid #ff0000 !important;
+            padding-left: 8px !important;
+        }
+
+        #realChatMessages .msg.moderator {
+            border-left: 3px solid #00ff00 !important;
+            padding-left: 8px !important;
+        }
+
+        #realChatMessages .msg.vip {
+            border-left: 3px solid #ff00ff !important;
+            padding-left: 8px !important;
+        }
+
+        #realChatMessages .msg.activity {
+            border: 1px solid transparent !important;
+            border-radius: 6px !important;
+            padding: 3px 8px !important;
+        }
+
+        #realChatMessages .msg.raid {
+            border-color: #4caf50 !important;
+        }
+
+        #realChatMessages .msg.first-message {
+            border-color: #f06292 !important;
+        }
+
+        #realChatMessages .msg.gift-sub {
+            border-color: #ffd700 !important;
+            opacity: 0.9 !important;
+        }
+
+        #realChatMessages .msg.vip-assign {
+            border-color: #ffb300 !important;
+        }
+
+        #realChatMessages .msg.birthday {
+            border-color: #ff8a65 !important;
+        }
+
+        #realChatMessages .msg.mod-assign {
+            border-color: #42a5f5 !important;
+        }
+
+        /* ==========================================
+           НИЖНЯЯ КАРТОЧКА
+           ========================================== */
+        .footer-card {
+            background: linear-gradient(135deg, var(--bg-card), var(--bg-input));
+            border-radius: var(--radius);
+            padding: 8px 14px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            width: 100%;
+        }
+
+        .footer-card .link-info {
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .footer-card .link-info .label {
+            font-size: 9px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+            margin-bottom: 2px;
+        }
+
+        .footer-card .link-info .url {
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            color: #64f0f0;
+            word-break: break-all;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 3px 8px;
+            border-radius: 3px;
+            display: inline-block;
+            max-width: 100%;
+        }
+
+        .footer-card .link-info .hint {
+            font-size: 9px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .footer-card .btn-copy {
+            padding: 5px 16px;
+            background: var(--accent);
+            border: none;
+            border-radius: var(--radius-sm);
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+
+        .footer-card .btn-copy:hover {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px var(--accent-glow);
+        }
+
+        .footer-card .btn-copy.copied {
+            background: #43a047;
+        }
+
+        /* ==========================================
+           АНИМАЦИИ
+           ========================================== */
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        @keyframes enterFade {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes enterSlideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes enterSlideLeft {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes enterScale {
+            from { opacity: 0; transform: scale(0.7); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes enterBounce {
+            0% { opacity: 0; transform: scale(0.3); }
+            50% { opacity: 1; transform: scale(1.05); }
+            70% { transform: scale(0.95); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes enterGlitch {
+            0% { opacity: 0; transform: translateX(-8px) skewX(-3deg); }
+            20% { opacity: 1; transform: translateX(4px) skewX(2deg); }
+            40% { transform: translateX(-3px) skewX(-1deg); }
+            60% { transform: translateX(2px) skewX(1deg); }
+            80% { transform: translateX(-1px) skewX(0deg); }
+            100% { transform: translateX(0) skewX(0); }
+        }
+
+        @keyframes exitFadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        @keyframes exitSlideOut {
+            from { opacity: 1; transform: translateX(0); }
+            to { opacity: 0; transform: translateX(40px); }
+        }
+
+        @keyframes exitScaleOut {
+            from { opacity: 1; transform: scale(1); }
+            to { opacity: 0; transform: scale(0.3); }
+        }
+
+        @keyframes exitShrink {
+            from { opacity: 1; transform: scale(1) translateY(0); max-height: 200px; padding: 3px 8px; margin-bottom: 3px; }
+            to { opacity: 0; transform: scale(0.5) translateY(-15px); max-height: 0; padding: 0 8px; margin-bottom: 0; }
+        }
+
+        @keyframes exitExplode {
+            0% { opacity: 1; transform: scale(1) rotate(0deg); }
+            30% { opacity: 1; transform: scale(1.2) rotate(3deg); }
+            100% { opacity: 0; transform: scale(0.1) rotate(20deg); }
+        }
+
+        .preview-chat .msg.enter-fade {
+            animation: enterFade 0.3s ease-out forwards;
+        }
+
+        .preview-chat .msg.enter-slideUp {
+            animation: enterSlideUp 0.3s ease-out forwards;
+        }
+
+        .preview-chat .msg.enter-slideLeft {
+            animation: enterSlideLeft 0.3s ease-out forwards;
+        }
+
+        .preview-chat .msg.enter-scale {
+            animation: enterScale 0.3s ease-out forwards;
+        }
+
+        .preview-chat .msg.enter-bounce {
+            animation: enterBounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        .preview-chat .msg.enter-glitch {
+            animation: enterGlitch 0.4s ease-out forwards;
+        }
+
+        .preview-chat .msg.exit-fadeOut {
+            animation: exitFadeOut 0.3s ease-in forwards;
+        }
+
+        .preview-chat .msg.exit-slideOut {
+            animation: exitSlideOut 0.3s ease-in forwards;
+        }
+
+        .preview-chat .msg.exit-scaleOut {
+            animation: exitScaleOut 0.3s ease-in forwards;
+        }
+
+        .preview-chat .msg.exit-shrink {
+            animation: exitShrink 0.4s ease-in forwards;
+            overflow: hidden;
+        }
+
+        .preview-chat .msg.exit-explode {
+            animation: exitExplode 0.4s ease-in forwards;
+        }
+
+        #realChatMessages .msg.enter-fade {
+            animation: enterFade 0.3s ease-out forwards;
+        }
+
+        #realChatMessages .msg.enter-slideUp {
+            animation: enterSlideUp 0.3s ease-out forwards;
+        }
+
+        #realChatMessages .msg.enter-slideLeft {
+            animation: enterSlideLeft 0.3s ease-out forwards;
+        }
+
+        #realChatMessages .msg.enter-scale {
+            animation: enterScale 0.3s ease-out forwards;
+        }
+
+        #realChatMessages .msg.enter-bounce {
+            animation: enterBounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        #realChatMessages .msg.enter-glitch {
+            animation: enterGlitch 0.4s ease-out forwards;
+        }
+
+        #realChatMessages .msg.exit-fadeOut {
+            animation: exitFadeOut 0.3s ease-in forwards;
+        }
+
+        #realChatMessages .msg.exit-slideOut {
+            animation: exitSlideOut 0.3s ease-in forwards;
+        }
+
+        #realChatMessages .msg.exit-scaleOut {
+            animation: exitScaleOut 0.3s ease-in forwards;
+        }
+
+        #realChatMessages .msg.exit-shrink {
+            animation: exitShrink 0.4s ease-in forwards;
+            overflow: hidden;
+        }
+
+        #realChatMessages .msg.exit-explode {
+            animation: exitExplode 0.4s ease-in forwards;
+        }
+
+        /* ==========================================
+           АДАПТИВНОСТЬ
+           ========================================== */
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            .stats-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .app {
+                padding: 8px;
+            }
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .settings-panel {
+                padding: 8px 10px;
+                max-height: 300px;
+            }
+            .footer-card {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .footer-card .btn-copy {
+                justify-content: center;
+            }
+            .preview-container {
+                min-height: 200px;
+            }
+            .preview-chat {
+                max-height: 300px;
+            }
+            #realChatContainer {
+                max-height: 300px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+            border-radius: 2px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 2px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent);
+        }
+
+        .toggle-btn-active {
+            background: #43a047 !important;
+            border-color: #43a047 !important;
+            color: white !important;
+        }
+
+        .toggle-btn-active:hover {
+            background: #388e3c !important;
+        }
+
+                /* ==========================================
+           ПЕРВОЕ СООБЩЕНИЕ ДЛЯ ПРЕВЬЮ
+           ========================================== */
+        .preview-chat .msg.first-message {
+            border: 2px solid #ff69b4 !important;
+            box-shadow: 0 0 20px rgba(255, 105, 180, 0.25) !important;
+            background: linear-gradient(135deg, rgba(255, 105, 180, 0.08), rgba(255, 20, 147, 0.03)) !important;
+        }
+
+        .preview-chat .msg.first-message .first-icon {
+            display: inline-block;
+            margin-right: 4px;
+            font-size: 0.9em;
+            vertical-align: middle;
+            animation: firstSparkle 2s ease-in-out infinite;
+        }
+
+        #realChatMessages .msg.first-message {
+            border: 2px solid #ff69b4 !important;
+            box-shadow: 0 0 20px rgba(255, 105, 180, 0.25) !important;
+            background: linear-gradient(135deg, rgba(255, 105, 180, 0.08), rgba(255, 20, 147, 0.03)) !important;
+        }
+
+        #realChatMessages .msg.first-message .first-icon {
+            display: inline-block;
+            margin-right: 4px;
+            font-size: 0.9em;
+            vertical-align: middle;
+            animation: firstSparkle 2s ease-in-out infinite;
+        }
+
+        @keyframes firstSparkle {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.2); }
+        }
+        
+    </style>
+</head>
+<body>
+
+<div class="app">
+    <!-- СТАТИСТИКА -->
+    <div class="stats-panel">
+        <div class="stats-header">
+            <span class="stats-title">📊 Статистика чата</span>
+            <div style="display:flex; align-items:center; gap:8px;">
+                <span class="stats-live loading" id="statsStatus">● ЗАГРУЗКА</span>
+                <button id="refreshStatsBtn" style="background:var(--bg-input); border:1px solid var(--border-color); border-radius:4px; color:var(--text-secondary); padding:4px 12px; font-size:11px; cursor:pointer; transition:var(--transition);">
+                    🔄 Обновить
+                </button>
+                <button id="resetStatsBtn" style="background:#ef5350; border:none; border-radius:4px; color:white; padding:4px 12px; font-size:11px; cursor:pointer; transition:var(--transition);">
+                    🗑️ Сбросить
+                </button>
+            </div>
+        </div>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">👥</div>
+                <div class="stat-info">
+                    <div class="stat-value" id="statViewers">0</div>
+                    <div class="stat-label">Зрителей</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">💬</div>
+                <div class="stat-info">
+                    <div class="stat-value" id="statMessages">0</div>
+                    <div class="stat-label">Сообщений</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📈</div>
+                <div class="stat-info">
+                    <div class="stat-value" id="statSpeed">0</div>
+                    <div class="stat-label">/мин</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🏆</div>
+                <div class="stat-info">
+                    <div class="stat-value" id="statTopChatter">—</div>
+                    <div class="stat-label">Топ</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🎁</div>
+                <div class="stat-info">
+                    <div class="stat-value" id="statGifts">0</div>
+                    <div class="stat-label">Подарков</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🚀</div>
+                <div class="stat-info">
+                    <div class="stat-value" id="statRaids">0</div>
+                    <div class="stat-label">Рейдов</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ОСНОВНАЯ СЕТКА -->
+    <div class="main-grid">
+        <!-- НАСТРОЙКИ (АККОРДЕОН) -->
+        <div class="settings-panel">
+            <h2>
+                <span class="icon">⚡</span>
+                Настройки чата
+            </h2>
+
+            <!-- Канал -->
+            <div class="accordion-section">
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                    <span class="section-title">📺 Канал</span>
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="accordion-body">
+                    <div class="form-group">
+                        <label for="channel">Ник Twitch</label>
+                        <div class="input-wrapper">
+                            <input type="text" id="channel" value="1diwan" placeholder="Введите ник">
+                        </div>
+                    </div>
+                    <div id="channelCard" class="channel-card">
+                        <div class="avatar">
+                            <img id="avatarImg" src="" alt="Avatar">
+                        </div>
+                        <div class="info">
+                            <div class="name" id="displayName">—</div>
+                            <div class="login" id="channelLogin">@—</div>
+                        </div>
+                        <div class="status-badge" id="channelStatus">⏳ Поиск...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Сообщения и Отображение (ОБЪЕДИНЕНО) -->
+            <div class="accordion-section">
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                    <span class="section-title">💬 Сообщения и отображение</span>
+                    <span class="arrow">▼</span>
+                </div>
+                <div class="accordion-body">
+                    <div class="form-group">
+                        <label for="fontSize">Размер шрифта</label>
+                        <div class="input-wrapper">
+                            <input type="range" id="fontSize" min="12" max="48" value="22" step="1">
+                            <span class="range-value" id="fontSizeValue">22</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="hideTime">Время жизни (сек)</label>
+                        <div class="input-wrapper">
+                            <input type="range" id="hideTime" min="0" max="120" value="20" step="1">
+                            <span class="range-value" id="hideTimeValue">20</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="maxMessages">Макс. сообщений</label>
+                        <div class="input-wrapper">
+                            <input type="range" id="maxMessages" min="1" max="20" value="10" step="1">
+                            <span class="range-value" id="maxMessagesValue">10</span>
+                        </div>
+                    </div>
+                    <div style="margin-top:8px; padding-top:8px; border-top:1px solid var(--border-color);">
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="showTime" checked>
+                            <label for="showTime">Время</label>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="showBadges" checked>
+                            <label for="showBadges">Бейджи</label>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="showAnimations" checked>
+                            <label for="showAnimations">Анимации</label>
+                        </div>
+                        <div style="margin-top:6px;">
+                            <label style="font-size:10px; color:var(--text-secondary); display:block; margin-bottom:2px;">Появление</label>
+                            <select id="enterAnimation" class="settings-select">
+                                <option value="fade">🌫️ Fade</option>
+                                <option value="slideUp" selected>⬆️ Slide Up</option>
+                                <option value="slideLeft">➡️ Slide Left</option>
+                                <option value="scale">🔍 Scale</option>
+                                <option value="bounce">🏀 Bounce</option>
+                                <option value="glitch">📺 Glitch</option>
+                            </select>
+                        </div>
+                        <div style="margin-top:4px;">
+                            <label style="font-size:10px; color:var(--text-secondary); display:block; margin-bottom:2px;">Исчезновение</label>
+                            <select id="exitAnimation" class="settings-select">
+                                <option value="fadeOut">🌫️ Fade Out</option>
+                                <option value="slideOut" selected>⬅️ Slide Out</option>
+                                <option value="scaleOut">🔍 Scale Out</option>
+                                <option value="shrink">📐 Shrink</option>
+                                <option value="explode">💥 Explode</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ПРЕВЬЮ -->
+        <div class="preview-panel">
+            <div class="preview-header-row">
+                <h2>
+                    <span>👁️</span>
+                    <span id="previewTitle">Превью</span>
+                </h2>
+                <div class="preview-actions">
+                    <button id="toggleChatBtn">📺 Реальный чат</button>
+                    <button id="hidePreviewBtn" title="Скрыть/показать превью">⬜ Скрыть</button>
+                </div>
+            </div>
+
+            <div class="preview-container" id="previewContainer">
+                <div class="preview-header">
+                    <div>
+                        <span class="dot"></span>
+                        <span class="label" id="previewChannel">#1diwan</span>
+                    </div>
+                    <span class="stats" id="previewStats">💬 0</span>
+                </div>
+
+                <!-- Превью -->
+                <div class="preview-chat" id="previewChat">
+                    <div class="preview-empty">
+                        <div class="icon">💬</div>
+                        <div>Сообщения появятся здесь</div>
+                    </div>
+                </div>
+
+                <!-- Реальный чат -->
+                <div id="realChatContainer">
+                    <div class="preview-empty" id="realChatEmpty">
+                        <div class="icon">💬</div>
+                        <div>Подключение к чату...</div>
+                        <div style="font-size:10px; opacity:0.6;" id="realChatStatus">Ожидание</div>
+                    </div>
+                    <div id="realChatMessages"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- НИЖНЯЯ КАРТОЧКА -->
+    <div class="footer-card">
+        <div class="link-info">
+            <div class="label">🔗 Ссылка для OBS</div>
+            <div class="url" id="outputUrl">Генерация...</div>
+            <div class="hint">Вставьте в OBS как источник "Browser"</div>
+        </div>
+        <button class="btn-copy" id="copyBtn">📋 Скопировать</button>
+    </div>
+</div>
+
+<input type="hidden" id="twitchId">
+
+<script>
+    // ==========================================
+    // АККОРДЕОН
+    // ==========================================
+    function toggleAccordion(header) {
+        const body = header.nextElementSibling;
+        const arrow = header.querySelector('.arrow');
+        
+        if (body.classList.contains('collapsed')) {
+            body.classList.remove('collapsed');
+            arrow.classList.remove('collapsed');
+        } else {
+            body.classList.add('collapsed');
+            arrow.classList.add('collapsed');
+        }
+    }
+
+    // По умолчанию все секции открыты
+    document.querySelectorAll('.accordion-body').forEach(el => {
+        el.classList.remove('collapsed');
+    });
+    document.querySelectorAll('.accordion-header .arrow').forEach(el => {
+        el.classList.remove('collapsed');
+    });
+
+    // ==========================================
+    // СКРЫТИЕ ПРЕВЬЮ
+    // ==========================================
+    let isPreviewHidden = false;
+    document.getElementById('hidePreviewBtn').addEventListener('click', function() {
+        const container = document.getElementById('previewContainer');
+        isPreviewHidden = !isPreviewHidden;
+        
+        if (isPreviewHidden) {
+            container.style.display = 'none';
+            this.textContent = '⬛ Показать';
+            this.title = 'Показать превью';
+        } else {
+            container.style.display = 'flex';
+            this.textContent = '⬜ Скрыть';
+            this.title = 'Скрыть превью';
+        }
+    });
+
+    // ==========================================
+    // ЭЛЕМЕНТЫ
+    // ==========================================
+    const channelInput = document.getElementById('channel');
+    const twitchIdInput = document.getElementById('twitchId');
+    const outputUrl = document.getElementById('outputUrl');
+    const copyBtn = document.getElementById('copyBtn');
+    const previewChat = document.getElementById('previewChat');
+    const previewChannel = document.getElementById('previewChannel');
+    const previewStats = document.getElementById('previewStats');
+
+    const channelCard = document.getElementById('channelCard');
+    const avatarImg = document.getElementById('avatarImg');
+    const displayName = document.getElementById('displayName');
+    const channelLogin = document.getElementById('channelLogin');
+    const channelStatus = document.getElementById('channelStatus');
+
+    const fontSize = document.getElementById('fontSize');
+    const fontSizeValue = document.getElementById('fontSizeValue');
+    const hideTime = document.getElementById('hideTime');
+    const hideTimeValue = document.getElementById('hideTimeValue');
+    const maxMessages = document.getElementById('maxMessages');
+    const maxMessagesValue = document.getElementById('maxMessagesValue');
+
+    const showTime = document.getElementById('showTime');
+    const showBadges = document.getElementById('showBadges');
+    const showAnimations = document.getElementById('showAnimations');
+    const enterAnimation = document.getElementById('enterAnimation');
+    const exitAnimation = document.getElementById('exitAnimation');
+
+    // ==========================================
+    // ПЕРЕМЕННЫЕ ДЛЯ ПРЕВЬЮ
+    // ==========================================
+    let previewInterval = null;
+    let messageTimers = [];
+    let currentPreviewMessages = [];
+    let messageElements = new Map();
+    let isPreviewRunning = false;
+
+    // ==========================================
+    // СТАТИСТИКА
+    // ==========================================
+    const stats = {
+        viewers: new Set(),
+        totalMessages: 0,
+        messageTimestamps: [],
+        topChatter: {},
+        gifts: 0,
+        raids: 0
+    };
+
+    function updateStatsDisplay() {
+        document.getElementById('statViewers').textContent = stats.viewers.size;
+        document.getElementById('statMessages').textContent = stats.totalMessages;
+        document.getElementById('statGifts').textContent = stats.gifts;
+        document.getElementById('statRaids').textContent = stats.raids;
+        
+        const now = Date.now();
+        const oneMinuteAgo = now - 60000;
+        stats.messageTimestamps = stats.messageTimestamps.filter(t => t > oneMinuteAgo);
+        document.getElementById('statSpeed').textContent = stats.messageTimestamps.length;
+        
+        let topUser = '—';
+        let topCount = 0;
+        for (const [user, count] of Object.entries(stats.topChatter)) {
+            if (count > topCount) {
+                topCount = count;
+                topUser = user;
+            }
+        }
+        document.getElementById('statTopChatter').textContent = topUser !== '—' ? `${topUser} (${topCount})` : '—';
+    }
+
+    function processRealMessageForStats(user, text, badges) {
+        stats.viewers.add(user);
+        stats.totalMessages++;
+        stats.messageTimestamps.push(Date.now());
+        
+        if (!stats.topChatter[user]) stats.topChatter[user] = 0;
+        stats.topChatter[user]++;
+        
+        const activity = detectActivity(text, user, badges);
+        if (activity.type === 'gift-sub') stats.gifts++;
+        else if (activity.type === 'raid') stats.raids++;
+        
+        updateStatsDisplay();
+    }
+
+    function resetStats() {
+        stats.viewers.clear();
+        stats.totalMessages = 0;
+        stats.messageTimestamps = [];
+        stats.topChatter = {};
+        stats.gifts = 0;
+        stats.raids = 0;
+        updateStatsDisplay();
+    }
+
+    // ==========================================
+    // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+    // ==========================================
+    function escapeHTML(str = "") {
+        return String(str).replace(/[&<>"']/g, match => {
+            const escapeMap = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            };
+            return escapeMap[match];
+        });
+    }
+
+    function getRandomItem(arr) {
+        return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    // ==========================================
+    // БАЗА ДАННЫХ СМАЙЛИКОВ
+    // ==========================================
+    const emotesDB = {
+        'kappa': 'https://static-cdn.jtvnw.net/emoticons/v2/25/default/dark/3.0',
+        'pogchamp': 'https://static-cdn.jtvnw.net/emoticons/v2/88/default/dark/3.0',
+        'kreygasm': 'https://static-cdn.jtvnw.net/emoticons/v2/41/default/dark/3.0',
+        'residentsleeper': 'https://static-cdn.jtvnw.net/emoticons/v2/245/default/dark/3.0',
+        'dansgame': 'https://static-cdn.jtvnw.net/emoticons/v2/33/default/dark/3.0',
+        'failfish': 'https://static-cdn.jtvnw.net/emoticons/v2/26/default/dark/3.0',
+        'kappapride': 'https://static-cdn.jtvnw.net/emoticons/v2/55338/default/dark/3.0',
+        'wutface': 'https://static-cdn.jtvnw.net/emoticons/v2/28/default/dark/3.0',
+        'biblethump': 'https://static-cdn.jtvnw.net/emoticons/v2/86/default/dark/3.0',
+        'kkona': 'https://static-cdn.jtvnw.net/emoticons/v2/7074/default/dark/3.0',
+        'trihard': 'https://static-cdn.jtvnw.net/emoticons/v2/52/default/dark/3.0',
+        'lul': 'https://static-cdn.jtvnw.net/emoticons/v2/425318/default/dark/3.0',
+        'jebaited': 'https://static-cdn.jtvnw.net/emoticons/v2/114836/default/dark/3.0',
+        'cmonbruh': 'https://static-cdn.jtvnw.net/emoticons/v2/150718/default/dark/3.0',
+        'forsen': 'https://static-cdn.jtvnw.net/emoticons/v2/31725/default/dark/3.0',
+        'pogu': 'https://static-cdn.jtvnw.net/emoticons/v2/425318/default/dark/3.0',
+        'pepega': 'https://cdn.betterttv.net/emote/5e1721e91c940226bed2a6a3/3x',
+        'feelsdankman': 'https://cdn.betterttv.net/emote/5e17216d1c940226bed2a69a/3x',
+        'sadge': 'https://cdn.betterttv.net/emote/5e1720b31c940226bed2a662/3x',
+        'kekw': 'https://cdn.betterttv.net/emote/5e1720d11c940226bed2a664/3x',
+        'pepehands': 'https://cdn.betterttv.net/emote/5e17211c1c940226bed2a67c/3x',
+        'monkagiga': 'https://cdn.betterttv.net/emote/5e1721a11c940226bed2a68b/3x',
+        'monkahmm': 'https://cdn.betterttv.net/emote/5e1721c31c940226bed2a699/3x',
+        'omegalul': 'https://cdn.betterttv.net/emote/5e1721aa1c940226bed2a68f/3x',
+        'pepelaugh': 'https://cdn.betterttv.net/emote/5e1721c81c940226bed2a69b/3x',
+        'gigachad': 'https://cdn.betterttv.net/emote/5e1721a61c940226bed2a68d/3x',
+        'poggers': 'https://cdn.betterttv.net/emote/5e1720db1c940226bed2a668/3x',
+        'monkaw': 'https://cdn.betterttv.net/emote/5e17219d1c940226bed2a689/3x',
+        '7tv': 'https://cdn.7tv.app/emote/01GB4CK01800090V9B3D8CGEEX/1x.avif',
+        'pepega7': 'https://cdn.7tv.app/emote/01J8NMZ2HG0005G1FWF2H9Y615/1x.avif',
+        'pog7': 'https://cdn.7tv.app/emote/01G4GQC5H0000D3DGNAYJJP8EB/1x.avif',
+        'sadge7': 'https://cdn.7tv.app/emote/01F9EM2ETG000E7SC8F953GXCX/1x.avif',
+        'kekw7': 'https://cdn.7tv.app/emote/01GAZ4SBX80007YCE2RXBT44B2/1x.avif',
+        'monka7': 'https://cdn.7tv.app/emote/01FTEZEE900001E12995B12GR4/1x.avif',
+        'pepe': 'https://cdn.frankerfacez.com/emote/105518/4',
+        'pepesad': 'https://cdn.frankerfacez.com/emote/105519/4',
+        'monkas': 'https://cdn.frankerfacez.com/emote/105523/4',
+        'monkaw': 'https://cdn.frankerfacez.com/emote/105524/4',
+        'monkahmm': 'https://cdn.frankerfacez.com/emote/105525/4',
+        'monkagiga': 'https://cdn.frankerfacez.com/emote/105526/4',
+    };
+
+    const emoteAliases = {
+        'pog': 'pogchamp',
+        'pogu': 'pogchamp',
+        'lulw': 'lul',
+        'omegalulw': 'omegalul',
+        'sad': 'sadge',
+        'monka': 'monkas',
+        'kek': 'kekw',
+    };
+
+    function parseEmotes(text) {
+        if (!text) return '';
+        let result = text;
+        const sortedKeys = Object.keys(emotesDB).filter(key => key.length > 1).sort((a, b) => b.length - a.length);
+        sortedKeys.forEach(key => {
+            const url = emotesDB[key];
+            if (!url || url.length <= 2) return;
+            const regex = new RegExp(`(^|\\s)${key}(?=\\s|$|[.,!?])`, 'gi');
+            result = result.replace(regex, (match, prefix) => {
+                const space = prefix || '';
+                return `${space}<img class="emote" src="${url}" alt="${key}" title="${key}" loading="lazy" onerror="this.style.display='none'">`;
+            });
+        });
+        Object.keys(emoteAliases).forEach(alias => {
+            const target = emoteAliases[alias];
+            const url = emotesDB[target];
+            if (!url) return;
+            const regex = new RegExp(`(^|\\s)${alias}(?=\\s|$|[.,!?])`, 'gi');
+            result = result.replace(regex, (match, prefix) => {
+                const space = prefix || '';
+                return `${space}<img class="emote" src="${url}" alt="${alias}" title="${alias}" loading="lazy" onerror="this.style.display='none'">`;
+            });
+        });
+        const unicodeEmojis = ['😊', '❤️', '👋', '🎵', '🔥', '😂', '😍', '💀', '✨', '🎉', '🙌', '💯', '👀', '🤔', '😅', '🤣', '😘', '🥰', '😎', '🤗', '😇', '🤩', '😈', '👿', '💪', '🦍', '🐒', '🐱', '🐶', '🐺', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '💙', '💚', '💖', '💜', '🧡', '💛', '🖤'];
+        unicodeEmojis.forEach(emoji => {
+            const regex = new RegExp(emoji, 'g');
+            result = result.replace(regex, `<span class="text-content">${emoji}</span>`);
+        });
+        return result;
+    }
+
+    // ==========================================
+    // ЗАГРУЗКА СМАЙЛИКОВ ДЛЯ РЕАЛЬНОГО ЧАТА
+    // ==========================================
+    async function loadChatEmotes() {
+        try {
+            const response7tv = await fetch(`https://7tv.io/v3/users/twitch/${twitchIdInput.value || '471329642'}`);
+            if (response7tv.ok) {
+                const data = await response7tv.json();
+                if (data.emote_set && data.emote_set.emotes) {
+                    data.emote_set.emotes.forEach(emote => {
+                        sevenTVEmotes[emote.name] = `https:${emote.data.host.url}/4x.webp`;
+                    });
+                }
+            }
+            
+            const responseBttv = await fetch(`https://api.betterttv.net/3/cached/users/twitch/${twitchIdInput.value || '471329642'}`);
+            if (responseBttv.ok) {
+                const data = await responseBttv.json();
+                const allEmotes = [...(data.channelEmotes || []), ...(data.sharedEmotes || [])];
+                allEmotes.forEach(emote => {
+                    bttvEmotes[emote.code] = `https://cdn.betterttv.net/emote/${emote.id}/3x`;
+                });
+            }
+            
+            const responseFfz = await fetch(`https://api.frankerfacez.com/v1/room/id/${twitchIdInput.value || '471329642'}`);
+            if (responseFfz.ok) {
+                const data = await responseFfz.json();
+                const sets = data.sets || {};
+                Object.values(sets).forEach(set => {
+                    if (!set.emoticons) return;
+                    set.emoticons.forEach(emote => {
+                        const url = emote.urls["4"] || emote.urls["2"] || emote.urls["1"];
+                        if (url) {
+                            ffzEmotes[emote.name] = url.startsWith("//") ? "https:" + url : url;
+                        }
+                    });
+                });
+            }
+            
+            console.log('✅ Смайлики загружены для реального чата:', {
+                sevenTV: Object.keys(sevenTVEmotes).length,
+                bttv: Object.keys(bttvEmotes).length,
+                ffz: Object.keys(ffzEmotes).length
+            });
+        } catch (err) {
+            console.error('❌ Ошибка загрузки смайликов:', err);
+        }
+    }
+
+    // ==========================================
+    // ЗАГРУЗКА БЕЙДЖЕЙ ДЛЯ РЕАЛЬНОГО ЧАТА
+    // ==========================================
+    let badgeMap = {};
+    let channelBadgeMap = {};
+
+    async function loadBadges() {
+        try {
+            const res = await fetch(`${API_URL}/badges/global`);
+            if (!res.ok) {
+                console.warn("Badges API not ok");
+                return;
+            }
+            const data = await res.json();
+            if (!data?.data) return;
+            data.data.forEach(set => {
+                badgeMap[set.set_id] = {};
+                set.versions.forEach(version => {
+                    badgeMap[set.set_id][version.id] = version.image_url_1x;
+                });
+            });
+            console.log("✅ Badges loaded");
+        } catch (err) {
+            console.warn("Badges failed:", err);
+        }
+    }
+
+    async function loadChannelBadges() {
+        const channelId = twitchIdInput.value || '471329642';
+        try {
+            const res = await fetch(`${API_URL}/badges/channel/${channelId}`);
+            const json = await res.json();
+            console.log("CHANNEL BADGES RAW:", json);
+            const data = json.data || [];
+            if (!data.length) {
+                console.log("ℹ️ No channel badges for this user");
+                return;
+            }
+            for (const set of data) {
+                const setId = set.set_id || set.id;
+                if (!setId) continue;
+                channelBadgeMap[setId] = {};
+                for (const version of set.versions || []) {
+                    if (!version?.id) continue;
+                    channelBadgeMap[setId][version.id] =
+                        version.image_url_1x ||
+                        version.image_url_2x ||
+                        version.image_url_4x;
+                }
+            }
+            console.log("✅ Channel badges loaded:", Object.keys(channelBadgeMap).length);
+        } catch (err) {
+            console.warn("Channel badges failed:", err);
+        }
+    }
+
+    // ==========================================
+    // ПАРСИНГ СМАЙЛИКОВ (ЕДИНАЯ ВЕРСИЯ)
+    // ==========================================
+    let sevenTVEmotes = {};
+    let bttvEmotes = {};
+    let ffzEmotes = {};
+    const emoteCache = new Map();
+
+    function getThirdPartyEmote(word) {
+        if (emoteCache.has(word)) {
+            return emoteCache.get(word);
+        }
+        const url = sevenTVEmotes[word] || bttvEmotes[word] || ffzEmotes[word];
+        if (!url) return null;
+        emoteCache.set(word, url);
+        return url;
+    }
+
+    function parseChatEmotes(text) {
+        if (!text) return '';
+        
+        const parts = text.split(/(\s+)/);
+        
+        return parts.map(part => {
+            if (/^\s+$/.test(part)) {
+                return part;
+            }
+            
+            const url = getThirdPartyEmote(part);
+            if (url) {
+                return `<img class="emote" src="${url}" alt="${escapeHTML(part)}" title="${escapeHTML(part)}" loading="lazy">`;
+            }
+            
+            const wordMatch = part.match(/^([.,\/#!$%\^&\*;:{}=\-_`~()]*)(.*?)([.,\/#!$%\^&\*;:{}=\-_`~()]*)$/);
+            if (wordMatch) {
+                const [, leading, core, trailing] = wordMatch;
+                const url2 = getThirdPartyEmote(core);
+                if (url2) {
+                    return `${leading}<img class="emote" src="${url2}" alt="${escapeHTML(core)}" title="${escapeHTML(core)}" loading="lazy">${trailing}`;
+                }
+            }
+            
+            return escapeHTML(part);
+        }).join('');
+    }
+
+    // ==========================================
+    // ЗАГРУЗКА СМАЙЛИКОВ ДЛЯ РЕАЛЬНОГО ЧАТА (ПРИ СМЕНЕ КАНАЛА)
+    // ==========================================
+    async function loadEmotesForRealChat() {
+        const channelId = twitchIdInput.value || '471329642';
+        
+        try {
+            // 7TV
+            const response7tv = await fetch(`https://7tv.io/v3/users/twitch/${channelId}`);
+            if (response7tv.ok) {
+                const data = await response7tv.json();
+                if (data.emote_set && data.emote_set.emotes) {
+                    data.emote_set.emotes.forEach(emote => {
+                        sevenTVEmotes[emote.name] = `https:${emote.data.host.url}/4x.webp`;
+                    });
+                }
+            }
+            
+            // BTTV
+            const responseBttv = await fetch(`https://api.betterttv.net/3/cached/users/twitch/${channelId}`);
+            if (responseBttv.ok) {
+                const data = await responseBttv.json();
+                const allEmotes = [...(data.channelEmotes || []), ...(data.sharedEmotes || [])];
+                allEmotes.forEach(emote => {
+                    bttvEmotes[emote.code] = `https://cdn.betterttv.net/emote/${emote.id}/3x`;
+                });
+            }
+            
+            // FFZ
+            const responseFfz = await fetch(`https://api.frankerfacez.com/v1/room/id/${channelId}`);
+            if (responseFfz.ok) {
+                const data = await responseFfz.json();
+                const sets = data.sets || {};
+                Object.values(sets).forEach(set => {
+                    if (!set.emoticons) return;
+                    set.emoticons.forEach(emote => {
+                        const url = emote.urls["4"] || emote.urls["2"] || emote.urls["1"];
+                        if (url) {
+                            ffzEmotes[emote.name] = url.startsWith("//") ? "https:" + url : url;
+                        }
+                    });
+                });
+            }
+            
+            console.log('✅ Смайлики загружены для нового канала:', {
+                sevenTV: Object.keys(sevenTVEmotes).length,
+                bttv: Object.keys(bttvEmotes).length,
+                ffz: Object.keys(ffzEmotes).length,
+                channelId: channelId
+            });
+            
+        } catch (err) {
+            console.error('❌ Ошибка загрузки смайликов для нового канала:', err);
+        }
+    }
+
+    // ==========================================
+    // ПАРСИНГ ВСЕХ СМАЙЛИКОВ (Twitch + 7TV + BTTV + FFZ)
+    // ==========================================
+    function parseAllEmotes(text, twitchEmotesRaw) {
+        if (!text) return '';
+        
+        if (!twitchEmotesRaw) {
+            return parseChatEmotes(escapeHTML(text));
+        }
+        
+        try {
+            let nodes = [];
+            const emotesData = twitchEmotesRaw.split('/').filter(Boolean);
+            
+            emotesData.forEach(emote => {
+                const [id, positions] = emote.split(':');
+                if (!id || !positions) return;
+                positions.split(',').forEach(pos => {
+                    const [start, end] = pos.split('-').map(Number);
+                    nodes.push({ id, start, end });
+                });
+            });
+            
+            nodes.sort((a, b) => a.start - b.start);
+            
+            let finalHTML = "";
+            let lastIndex = 0;
+            
+            nodes.forEach(node => {
+                if (node.start > lastIndex) {
+                    finalHTML += parseChatEmotes(escapeHTML(text.substring(lastIndex, node.start)));
+                }
+                
+                const emoteName = escapeHTML(text.substring(node.start, node.end + 1));
+                finalHTML += `
+                    <img class="emote" 
+                         src="https://static-cdn.jtvnw.net/emoticons/v2/${node.id}/default/dark/3.0"
+                         alt="${emoteName}"
+                         title="${emoteName}"
+                         loading="lazy">
+                `;
+                lastIndex = node.end + 1;
+            });
+            
+            if (lastIndex < text.length) {
+                finalHTML += parseChatEmotes(escapeHTML(text.substring(lastIndex)));
+            }
+            
+            return finalHTML;
+        } catch (e) {
+            console.error("Ошибка парсера:", e);
+            return parseChatEmotes(escapeHTML(text));
+        }
+    }
+
+    // ==========================================
+    // ОПРЕДЕЛЕНИЕ АКТИВНОСТЕЙ
+    // ==========================================
+    function detectActivity(message, user, badges) {
+        const text = message.toLowerCase();
+        const result = { type: null, class: '', displayName: user };
+
+        if (text.includes('рейд') || text.includes('raid') || text.includes('привел') || text.includes('привела')) {
+            result.type = 'raid'; result.class = 'raid';
+        } else if ((badges && badges.includes('first_message')) || text.includes('первое сообщение')) {
+            result.type = 'first-message'; result.class = 'first-message';
+        } else if (text.includes('подарил') || text.includes('gift') || text.includes('подписку') || text.includes('саб') || text.includes('sub')) {
+            result.type = 'gift-sub'; result.class = 'gift-sub';
+        } else if (text.includes('vip') && (text.includes('назначил') || text.includes('стал') || text.includes('получил'))) {
+            result.type = 'vip-assign'; result.class = 'vip-assign';
+        } else if (text.includes('день рождения') || text.includes('happy birthday') || text.includes('с днём рождения')) {
+            result.type = 'birthday'; result.class = 'birthday';
+        } else if (text.includes('модератор') || text.includes('moderator')) {
+            result.type = 'mod-assign'; result.class = 'mod-assign';
+        }
+        return result;
+    }
+
+    // ==========================================
+    // ГЕНЕРАЦИЯ СООБЩЕНИЙ ДЛЯ ПРЕВЬЮ
+    // ==========================================
+    const users = ['Diwan', 'Viewer1', 'Moderator', 'VIP', 'User123', 'GamerPro', 'StreamLover', 'Chatter', 'NoobMaster', 'EliteGamer', 'PixelWarrior', 'NeonRider', 'CyberPunk', 'StarGazer', 'MoonWalker'];
+    const userColors = ['#a970ff', '#00ff9d', '#ff6b6b', '#ffd93d', '#4fc3f7', '#ff8a65', '#aed581', '#ff80ab', '#81d4fa', '#ce93d8'];
+    const emoteList = Object.keys(emotesDB).filter(k => k.length > 1);
+
+    function generateRandomMessage() {
+        const user = getRandomItem(users);
+        const color = getRandomItem(userColors);
+        const numEmotes = getRandomInt(2, 4);
+        const selectedEmotes = [];
+        for (let i = 0; i < numEmotes; i++) {
+            selectedEmotes.push(getRandomItem(emoteList));
+        }
+        
+        const templates = [
+            (emotes) => `Привет всем! ${getRandomItem(emotes)} ${getRandomItem(emotes)}`,
+            (emotes) => `Как дела? ${getRandomItem(emotes)}`,
+            (emotes) => `Отличный стрим! ${getRandomItem(emotes)} ${getRandomItem(emotes)}`,
+            (emotes) => `Погнали! ${getRandomItem(emotes)}`,
+            (emotes) => `Спасибо за стрим! ${getRandomItem(emotes)}`,
+            (emotes) => `Привел 50 зрителей! Рейд! ${getRandomItem(emotes)}`,
+            (emotes) => `Raid от ${getRandomItem(users)}! ${getRandomItem(emotes)}`,
+            (emotes) => `Моё первое сообщение в чате! ${getRandomItem(emotes)}`,
+            (emotes) => `Подарил подписку зрителю! ${getRandomItem(emotes)}`,
+            (emotes) => `Gift sub отправлен! ${getRandomItem(emotes)}`,
+            (emotes) => `Назначил VIP роль пользователю! ${getRandomItem(emotes)}`,
+            (emotes) => `Теперь VIP! ${getRandomItem(emotes)}`,
+            (emotes) => `С днём рождения, стример! ${getRandomItem(emotes)}`,
+            (emotes) => `Назначен модератором! ${getRandomItem(emotes)}`,
+            (emotes) => `Классный контент! ${getRandomItem(emotes)}`,
+            (emotes) => `Ура! ${getRandomItem(emotes)} ${getRandomItem(emotes)}`,
+            (emotes) => `Вот это поворот! ${getRandomItem(emotes)}`,
+        ];
+        
+        const template = getRandomItem(templates);
+        let text = template(selectedEmotes);
+        
+        const unicodeEmojis = ['😊', '❤️', '🔥', '😂', '🎉', '✨', '💯', '👀', '😎', '💪'];
+        if (Math.random() > 0.5) text += ' ' + getRandomItem(unicodeEmojis);
+        
+        const badgeSets = [
+            'broadcaster/1',
+            'moderator/1',
+            'vip/1',
+            'subscriber/1',
+            'subscriber/2',
+            'subscriber/3',
+            'partner/1',
+            'founder/1',
+            'bits/1',
+            'bits/100',
+            'bits/1000',
+            'first_message/1',
+            ''
+        ];
+        const badges = getRandomItem(badgeSets);
+        
+        return { user, text, color, badges, timestamp: Date.now() };
+    }
+
+    // ==========================================
+    // УПРАВЛЕНИЕ ПРЕВЬЮ
+    // ==========================================
+    function clearPreviewTimers() {
+        if (previewInterval) {
+            clearInterval(previewInterval);
+            previewInterval = null;
+        }
+        messageTimers.forEach(timer => clearTimeout(timer));
+        messageTimers = [];
+        messageElements.clear();
+        isPreviewRunning = false;
+    }
+
+    function addMessageToDOM(msg) {
+        const showTimeVal = showTime.checked;
+        const showBadgesVal = showBadges.checked;
+        const fontSizeVal = parseInt(fontSize.value) || 22;
+        const showAnimationsVal = showAnimations.checked;
+        const hideSec = parseInt(hideTime.value) || 20;
+        const enterAnim = enterAnimation ? enterAnimation.value : 'slideUp';
+        const exitAnim = exitAnimation ? exitAnimation.value : 'slideOut';
+
+        const activity = detectActivity(msg.text, msg.user, msg.badges);
+
+        const el = document.createElement('div');
+        el.className = 'msg';
+        
+        if (msg.badges && msg.badges.includes('broadcaster')) {
+            el.classList.add('broadcaster');
+        }
+        if (msg.badges && msg.badges.includes('moderator')) {
+            el.classList.add('moderator');
+        }
+        if (msg.badges && msg.badges.includes('vip')) {
+            el.classList.add('vip');
+        }
+        
+        if (activity.class) {
+            el.classList.add(activity.class);
+            el.classList.add('activity');
+        }
+        
+        if (showAnimationsVal) {
+            el.classList.add(`enter-${enterAnim}`);
+        }
+
+        el.style.fontSize = `${fontSizeVal}px`;
+
+        let html = '';
+
+        if (showTimeVal) {
+            const now = new Date();
+            const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            html += `<span class="time">[${timeStr}]</span>`;
+        }
+
+        if (showBadgesVal && msg.badges) {
+            const badges = msg.badges.split(',');
+            badges.forEach(b => {
+                const parts = b.split('/');
+                const set = parts[0];
+                const version = parts[1] || '1';
+                
+                const url = channelBadgeMap?.[set]?.[version] || badgeMap?.[set]?.[version];
+                if (url) {
+                    html += `<img class="badge" src="${url}" alt="${set}" title="${set}" style="width:18px; height:18px; vertical-align:middle; margin-right:2px; display:inline-block; border-radius:4px;">`;
+                }
+            });
+        }
+
+        html += `<span class="username" style="color:${msg.color}">${escapeHTML(msg.user)}</span>: `;
+        html += parseEmotes(msg.text);
+
+        el.innerHTML = html;
+        previewChat.prepend(el);
+        messageElements.set(msg, el);
+        
+        if (hideSec > 0) {
+            const timer = setTimeout(() => {
+                if (el.isConnected) {
+                    if (showAnimationsVal) {
+                        el.classList.remove(`enter-${enterAnim}`);
+                        el.classList.add(`exit-${exitAnim}`);
+                        setTimeout(() => {
+                            if (el.isConnected) {
+                                el.remove();
+                            }
+                            messageElements.delete(msg);
+                            const index = currentPreviewMessages.indexOf(msg);
+                            if (index !== -1) {
+                                currentPreviewMessages.splice(index, 1);
+                            }
+                            previewStats.textContent = `💬 ${currentPreviewMessages.length} сообщений`;
+                        }, 500);
+                    } else {
+                        el.remove();
+                        messageElements.delete(msg);
+                        const index = currentPreviewMessages.indexOf(msg);
+                        if (index !== -1) {
+                            currentPreviewMessages.splice(index, 1);
+                        }
+                        previewStats.textContent = `💬 ${currentPreviewMessages.length} сообщений`;
+                    }
+                }
+            }, hideSec * 1000);
+            messageTimers.push(timer);
+        }
+    }
+
+    function startPreview() {
+        clearPreviewTimers();
+        const maxMessagesVal = parseInt(maxMessages.value) || 10;
+        previewChat.innerHTML = '';
+        currentPreviewMessages = [];
+        messageElements.clear();
+        const initialCount = Math.min(maxMessagesVal, 8);
+        for (let i = 0; i < initialCount; i++) {
+            const msg = generateRandomMessage();
+            currentPreviewMessages.push(msg);
+        }
+        currentPreviewMessages.forEach((msg, index) => {
+            setTimeout(() => {
+                addMessageToDOM(msg);
+            }, index * 150);
+        });
+        setTimeout(() => {
+            previewStats.textContent = `💬 ${currentPreviewMessages.length} сообщений`;
+        }, 500);
+        isPreviewRunning = true;
+        previewInterval = setInterval(() => {
+            if (!isPreviewRunning) return;
+            const currentLimit = parseInt(maxMessages.value) || 10;
+            const newMsg = generateRandomMessage();
+            currentPreviewMessages.push(newMsg);
+            addMessageToDOM(newMsg);
+            while (currentPreviewMessages.length > currentLimit) {
+                const oldestMsg = currentPreviewMessages[0];
+                const element = messageElements.get(oldestMsg);
+                if (element && element.isConnected) {
+                    element.classList.add('hide');
+                    setTimeout(() => {
+                        if (element.isConnected) {
+                            element.remove();
+                        }
+                    }, 500);
+                }
+                messageElements.delete(oldestMsg);
+                currentPreviewMessages.splice(0, 1);
+            }
+            previewStats.textContent = `💬 ${currentPreviewMessages.length} сообщений`;
+        }, getRandomInt(3000, 5000));
+    }
+
+    function renderPreviewMessages() {
+        const showTimeVal = showTime.checked;
+        const showBadgesVal = showBadges.checked;
+        const fontSizeVal = parseInt(fontSize.value) || 22;
+        const showAnimationsVal = showAnimations.checked;
+        const enterAnim = enterAnimation ? enterAnimation.value : 'slideUp';
+
+        messageElements.forEach((el, msg) => {
+            el.style.fontSize = `${fontSizeVal}px`;
+            
+            if (showAnimationsVal) {
+                el.className = 'msg';
+                if (msg.badges && msg.badges.includes('broadcaster')) el.classList.add('broadcaster');
+                if (msg.badges && msg.badges.includes('moderator')) el.classList.add('moderator');
+                if (msg.badges && msg.badges.includes('vip')) el.classList.add('vip');
+                el.classList.add(`enter-${enterAnim}`);
+            } else {
+                el.className = 'msg';
+                if (msg.badges && msg.badges.includes('broadcaster')) el.classList.add('broadcaster');
+                if (msg.badges && msg.badges.includes('moderator')) el.classList.add('moderator');
+                if (msg.badges && msg.badges.includes('vip')) el.classList.add('vip');
+            }
+            
+            let html = '';
+            
+            if (showTimeVal) {
+                const now = new Date();
+                const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+                html += `<span class="time">[${timeStr}]</span>`;
+            }
+            
+            if (showBadgesVal && msg.badges) {
+                const badges = msg.badges.split(',');
+                badges.forEach(b => {
+                    const parts = b.split('/');
+                    const set = parts[0];
+                    const version = parts[1] || '1';
+                    
+                    const url = channelBadgeMap?.[set]?.[version] || badgeMap?.[set]?.[version];
+                    if (url) {
+                        html += `<img class="badge" src="${url}" alt="${set}" title="${set}" style="width:18px; height:18px; vertical-align:middle; margin-right:2px; display:inline-block; border-radius:4px;">`;
+                    }
+                });
+            }
+            
+            html += `<span class="username" style="color:${msg.color}">${escapeHTML(msg.user)}</span>: `;
+            html += parseEmotes(msg.text);
+            
+            el.innerHTML = html;
+        });
+        
+        previewStats.textContent = `💬 ${currentPreviewMessages.length} сообщений`;
+    }
+
+    // ==========================================
+    // API НАСТРОЙКИ
+    // ==========================================
+    const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+        ? 'http://localhost:3000'
+        : 'https://api.your-domain.com';
+
+    // ==========================================
+    // ГЕНЕРАЦИЯ ССЫЛКИ
+    // ==========================================
+    function generateUrl() {
+        const channel = channelInput.value.trim() || '1diwan';
+        const twitchId = twitchIdInput.value || '';
+        const fontSizeVal = fontSize.value;
+        const hideTimeVal = hideTime.value;
+        const maxMessagesVal = maxMessages.value;
+        const showTimeVal = showTime.checked;
+        const enterAnim = enterAnimation ? enterAnimation.value : 'slideUp';
+        const exitAnim = exitAnimation ? exitAnimation.value : 'slideOut';
+
+        const currentPath = window.location.pathname;
+        const basePath = window.location.origin + currentPath.replace(/[^/]*$/, '') + 'chat.html';
+
+        let url = `${basePath}?channel=${encodeURIComponent(channel)}`;
+        
+        if (twitchId) {
+            url += `&twitchId=${encodeURIComponent(twitchId)}`;
+        }
+        
+        url += `&fontSize=${fontSizeVal}&hideTime=${hideTimeVal}&maxMessages=${maxMessagesVal}`;
+        if (!showTimeVal) url += '&showTime=false';
+        url += `&enterAnim=${enterAnim}&exitAnim=${exitAnim}`;
+
+        outputUrl.textContent = url;
+        previewChannel.textContent = `#${channel}`;
+    }
+
+    // ==========================================
+    // ПОИСК ПОЛЬЗОВАТЕЛЯ
+    // ==========================================
+    async function fetchTwitchUser(login) {
+        if (!login || login.length < 3) {
+            channelCard.classList.remove('visible');
+            channelCard.classList.remove('found');
+            channelCard.classList.remove('error');
+            return;
+        }
+
+        channelCard.classList.add('visible');
+        channelStatus.className = 'status-badge loading';
+        channelStatus.textContent = '⏳ Поиск...';
+        displayName.textContent = login;
+        channelLogin.textContent = `@${login}`;
+        avatarImg.src = '';
+
+        try {
+            const res = await fetch(`${API_URL}/user/${encodeURIComponent(login)}`);
+            
+            if (!res.ok) {
+                console.warn(`⚠️ Сервер вернул ${res.status}, используем fallback`);
+                const fakeId = Math.floor(Math.random() * 1000000000) + 100000000;
+                twitchIdInput.value = fakeId;
+                channelStatus.className = 'status-badge found';
+                channelStatus.textContent = '✅ ID (fallback)';
+                displayName.textContent = login;
+                channelLogin.textContent = `@${login}`;
+                channelCard.classList.add('found');
+                channelCard.classList.remove('error');
+                generateUrl();
+                restartPreview();
+                await loadChannelBadges();
+                await loadEmotesForRealChat();
+                if (isRealChatMode) {
+                    connectRealChat();
+                }
+                return;
+            }
+
+            const data = await res.json();
+            const user = data.data?.[0];
+
+            if (!user) {
+                channelStatus.className = 'status-badge error';
+                channelStatus.textContent = '❌ Не найден';
+                displayName.textContent = login;
+                twitchIdInput.value = '';
+                generateUrl();
+                channelCard.classList.add('error');
+                channelCard.classList.remove('found');
+                return;
+            }
+
+            twitchIdInput.value = user.id;
+            const userAvatar = user.profile_image_url || '';
+            const userName = user.display_name || login;
+
+            channelStatus.className = 'status-badge found';
+            channelStatus.textContent = '✅ ID найден';
+            displayName.textContent = userName;
+            channelLogin.textContent = `@${login}`;
+            if (userAvatar) avatarImg.src = userAvatar;
+
+            channelCard.classList.add('found');
+            channelCard.classList.remove('error');
+
+            generateUrl();
+            restartPreview();
+            
+            await loadChannelBadges();
+            await loadEmotesForRealChat();
+            if (isRealChatMode) {
+                connectRealChat();
+            }
+
+        } catch (err) {
+            console.error('User lookup error:', err);
+            const fakeId = Math.floor(Math.random() * 1000000000) + 100000000;
+            twitchIdInput.value = fakeId;
+            channelStatus.className = 'status-badge found';
+            channelStatus.textContent = '⚠️ ID (авто)';
+            displayName.textContent = login;
+            channelLogin.textContent = `@${login}`;
+            channelCard.classList.add('found');
+            channelCard.classList.remove('error');
+            generateUrl();
+            restartPreview();
+        }
+    }
+
+    // ==========================================
+    // ОБНОВЛЕНИЕ НАСТРОЕК
+    // ==========================================
+    function updatePreviewSettings() {
+        fontSizeValue.textContent = fontSize.value;
+        hideTimeValue.textContent = hideTime.value;
+        maxMessagesValue.textContent = maxMessages.value;
+        renderPreviewMessages();
+        generateUrl();
+    }
+
+    let restartTimeout = null;
+
+    function restartPreview() {
+        if (restartTimeout) {
+            clearTimeout(restartTimeout);
+        }
+        restartTimeout = setTimeout(() => {
+            clearPreviewTimers();
+            startPreview();
+            generateUrl();
+            
+            fontSizeValue.textContent = fontSize.value;
+            hideTimeValue.textContent = hideTime.value;
+            maxMessagesValue.textContent = maxMessages.value;
+            
+            restartTimeout = null;
+        }, 300);
+    }
+
+    // ==========================================
+    // ОБРАБОТЧИКИ СОБЫТИЙ (ЕДИНЫЙ БЛОК)
+    // ==========================================
+    let searchTimeout = null;
+    channelInput.addEventListener('input', (e) => {
+        clearTimeout(searchTimeout);
+        const login = e.target.value.trim();
+        if (login.length >= 3) {
+            searchTimeout = setTimeout(() => {
+                fetchTwitchUser(login);
+            }, 600);
+        } else {
+            channelCard.classList.remove('visible');
+            channelCard.classList.remove('found');
+            channelCard.classList.remove('error');
+            twitchIdInput.value = '';
+            generateUrl();
+        }
+    });
+
+    channelInput.addEventListener('blur', (e) => {
+        const login = e.target.value.trim();
+        if (login.length >= 3) fetchTwitchUser(login);
+    });
+
+    channelInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const login = e.target.value.trim();
+            if (login.length >= 3) fetchTwitchUser(login);
+        }
+    });
+
+    fontSize.addEventListener('input', () => {
+        fontSizeValue.textContent = fontSize.value;
+        restartPreview();
+        if (isRealChatMode) applySettingsToRealChat();
+    });
+
+    hideTime.addEventListener('input', () => {
+        hideTimeValue.textContent = hideTime.value;
+        restartPreview();
+        if (isRealChatMode) applySettingsToRealChat();
+    });
+
+    maxMessages.addEventListener('input', () => {
+        maxMessagesValue.textContent = maxMessages.value;
+        restartPreview();
+        
+        if (isRealChatMode) {
+            const maxMessagesVal = parseInt(maxMessages.value) || 10;
+            const currentCount = realChatMessages.children.length;
+            if (currentCount > maxMessagesVal) {
+                const toRemove = currentCount - maxMessagesVal;
+                const showAnimationsVal = showAnimations.checked;
+                const enterAnim = enterAnimation ? enterAnimation.value : 'slideUp';
+                const exitAnim = exitAnimation ? exitAnimation.value : 'slideOut';
+                
+                isRemovingMessages = true;
+                removeOldMessages(toRemove, showAnimationsVal, enterAnim, exitAnim, () => {
+                    isRemovingMessages = false;
+                    processPendingMessages();
+                });
+            }
+        }
+    });
+
+    showTime.addEventListener('change', () => {
+        updatePreviewSettings();
+        if (isRealChatMode) applySettingsToRealChat();
+    });
+
+    showBadges.addEventListener('change', () => {
+        updatePreviewSettings();
+        if (isRealChatMode) applySettingsToRealChat();
+    });
+
+    showAnimations.addEventListener('change', () => {
+        updatePreviewSettings();
+        if (isRealChatMode) applySettingsToRealChat();
+    });
+    
+    enterAnimation.addEventListener('change', () => {
+        restartPreview();
+        if (isRealChatMode) applySettingsToRealChat();
+    });
+    
+    exitAnimation.addEventListener('change', () => {
+        restartPreview();
+        if (isRealChatMode) applySettingsToRealChat();
+    });
+
+    // ==========================================
+    // КОПИРОВАНИЕ
+    // ==========================================
+    copyBtn.addEventListener('click', async () => {
+        const url = outputUrl.textContent;
+        if (!url || url === 'Генерация...') return;
+        try {
+            await navigator.clipboard.writeText(url);
+            copyBtn.classList.add('copied');
+            copyBtn.innerHTML = '<span>✅</span> Скопировано!';
+            setTimeout(() => {
+                copyBtn.classList.remove('copied');
+                copyBtn.innerHTML = '<span>📋</span> Скопировать';
+            }, 2500);
+        } catch (err) {
+            const range = document.createRange();
+            range.selectNode(outputUrl);
+            window.getSelection().removeAllRanges();
+            window.getSelection().addRange(range);
+            document.execCommand('copy');
+            window.getSelection().removeAllRanges();
+            copyBtn.classList.add('copied');
+            copyBtn.innerHTML = '<span>✅</span> Скопировано!';
+            setTimeout(() => {
+                copyBtn.classList.remove('copied');
+                copyBtn.innerHTML = '<span>📋</span> Скопировать';
+            }, 2500);
+        }
+    });
+
+    // ==========================================
+    // ИНИЦИАЛИЗАЦИЯ
+    // ==========================================
+    async function init() {
+        const channel = channelInput.value.trim();
+        if (channel && channel.length >= 3) {
+            await fetchTwitchUser(channel);
+        } else {
+            generateUrl();
+        }
+        
+        await loadBadges();
+        await loadChannelBadges();
+        await loadChatEmotes();
+        
+        setTimeout(() => {
+            startPreview();
+        }, 500);
+    }
+
+    init();
+
+    // ==========================================
+    // СТАТИСТИКА, СВЯЗЬ С ЧАТОМ И СТАТУС КАНАЛА
+    // ==========================================
+    const statsChannel = new BroadcastChannel('twitch_stats');
+    let lastStatsTime = Date.now();
+    let isWaitingForStats = false;
+    let isChannelLive = false;
+    let channelCheckInterval = null;
+
+    statsChannel.onmessage = (event) => {
+        const data = event.data;
+        console.log('📊 Получена статистика:', data);
+        
+        if (data.type === 'stats_update') {
+            document.getElementById('statViewers').textContent = data.viewers || 0;
+            document.getElementById('statMessages').textContent = data.totalMessages || 0;
+            document.getElementById('statSpeed').textContent = data.speed || 0;
+            document.getElementById('statTopChatter').textContent = data.topChatter || '—';
+            document.getElementById('statGifts').textContent = data.gifts || 0;
+            document.getElementById('statRaids').textContent = data.raids || 0;
+            
+            lastStatsTime = Date.now();
+            isWaitingForStats = false;
+        }
+        
+        if (data.type === 'stats_reset') {
+            document.getElementById('statViewers').textContent = 0;
+            document.getElementById('statMessages').textContent = 0;
+            document.getElementById('statSpeed').textContent = 0;
+            document.getElementById('statTopChatter').textContent = '—';
+            document.getElementById('statGifts').textContent = 0;
+            document.getElementById('statRaids').textContent = 0;
+            lastStatsTime = Date.now();
+        }
+    };
+
+    async function checkChannelStatus() {
+        const channel = channelInput.value.trim() || '1diwan';
+        if (!channel) return;
+        
+        const statusElement = document.getElementById('statsStatus');
+        if (!statusElement) return;
+        
+        statusElement.textContent = '● ПРОВЕРКА...';
+        statusElement.style.color = '#ffa726';
+        statusElement.style.animation = 'livePulse 1.5s ease-in-out infinite';
+        
+        try {
+            const response = await fetch(`https://decapi.me/twitch/uptime/${channel}`);
+            
+            if (response.ok) {
+                const uptime = await response.text();
+                const isOffline = uptime.toLowerCase().includes('is offline') || uptime.trim() === '';
+                isChannelLive = !isOffline;
+                console.log(`📺 Статус канала ${channel}: ${isChannelLive ? 'LIVE ✅' : 'OFFLINE ❌'} (${uptime})`);
+            } else {
+                const altResponse = await fetch(`https://api.gempir.com/stream/${channel}`);
+                if (altResponse.ok) {
+                    const data = await altResponse.json();
+                    isChannelLive = data.live || false;
+                    console.log(`📺 Статус канала ${channel} (API): ${isChannelLive ? 'LIVE ✅' : 'OFFLINE ❌'}`);
+                } else {
+                    statusElement.textContent = '● НЕИЗВЕСТНО';
+                    statusElement.style.color = '#ffa726';
+                    statusElement.style.animation = 'none';
+                    return;
+                }
+            }
+            
+            updateLiveStatus();
+            
+        } catch (err) {
+            console.error('❌ Ошибка проверки статуса канала:', err);
+            statusElement.textContent = '● ОШИБКА';
+            statusElement.style.color = '#ef5350';
+            statusElement.style.animation = 'none';
+        }
+    }
+
+    function updateLiveStatus() {
+        const statusElement = document.getElementById('statsStatus');
+        if (!statusElement) return;
+        
+        statusElement.classList.remove('loading');
+        
+        if (isChannelLive) {
+            statusElement.textContent = '● LIVE';
+            statusElement.style.color = '#4caf50';
+            statusElement.style.animation = 'livePulse 1.5s ease-in-out infinite';
+            statusElement.className = 'stats-live live';
+        } else {
+            statusElement.textContent = '● OFFLINE';
+            statusElement.style.color = '#ef5350';
+            statusElement.style.animation = 'none';
+            statusElement.className = 'stats-live offline';
+        }
+    }
+
+    function startChannelStatusCheck() {
+        setTimeout(() => {
+            checkChannelStatus();
+        }, 1000);
+        
+        if (channelCheckInterval) {
+            clearInterval(channelCheckInterval);
+        }
+        channelCheckInterval = setInterval(checkChannelStatus, 180000);
+    }
+
+    document.getElementById('refreshStatsBtn').addEventListener('click', () => {
+        checkChannelStatus();
+        statsChannel.postMessage({ type: 'request_stats' });
+        
+        const btn = document.getElementById('refreshStatsBtn');
+        btn.textContent = '⏳ Обновление...';
+        btn.style.opacity = '0.6';
+        btn.style.pointerEvents = 'none';
+        
+        setTimeout(() => {
+            btn.textContent = '🔄 Обновить';
+            btn.style.opacity = '1';
+            btn.style.pointerEvents = 'auto';
+        }, 2000);
+        
+        console.log('🔄 Запрос актуальной статистики и статуса отправлен');
+    });
+
+    document.getElementById('resetStatsBtn').addEventListener('click', () => {
+        if (confirm('Сбросить всю статистику чата?')) {
+            statsChannel.postMessage({ type: 'reset_stats' });
+            
+            const btn = document.getElementById('resetStatsBtn');
+            btn.textContent = '⏳ Сброс...';
+            btn.style.opacity = '0.6';
+            
+            setTimeout(() => {
+                btn.textContent = '🗑️ Сбросить';
+                btn.style.opacity = '1';
+            }, 1500);
+            
+            console.log('🗑️ Команда сброса статистики отправлена');
+        }
+    });
+
+    startChannelStatusCheck();
+
+    console.log('📡 Статистика чата активна');
+    console.log('🎮 Twitch Chat Overlay Configurator v3.4 — Улучшенная версия');
+
+    // ==========================================
+    // ПЕРЕКЛЮЧЕНИЕ МЕЖДУ ПРЕВЬЮ И РЕАЛЬНЫМ ЧАТОМ
+    // ==========================================
+    let isRealChatMode = false;
+    let realChatSocket = null;
+    let realChatReconnectAttempts = 0;
+    let realChatMaxReconnectAttempts = 5;
+
+    const toggleBtn = document.getElementById('toggleChatBtn');
+    const realChatContainer = document.getElementById('realChatContainer');
+    const realChatMessages = document.getElementById('realChatMessages');
+    const realChatEmpty = document.getElementById('realChatEmpty');
+    const realChatStatus = document.getElementById('realChatStatus');
+    const previewTitle = document.getElementById('previewTitle');
+
+    function applySettingsToRealChat() {
+        const fontSizeVal = parseInt(fontSize.value) || 22;
+        const showTimeVal = showTime.checked;
+        const showAnimationsVal = showAnimations.checked;
+        const enterAnim = enterAnimation ? enterAnimation.value : 'slideUp';
+
+        document.querySelectorAll('#realChatMessages .msg').forEach(el => {
+            el.style.fontSize = `${fontSizeVal}px`;
+            
+            const timeSpan = el.querySelector('.time');
+            if (timeSpan) {
+                timeSpan.style.display = showTimeVal ? 'inline' : 'none';
+            }
+            
+            if (showAnimationsVal) {
+                const activityClasses = [];
+                if (el.classList.contains('activity')) activityClasses.push('activity');
+                if (el.classList.contains('raid')) activityClasses.push('raid');
+                if (el.classList.contains('first-message')) activityClasses.push('first-message');
+                if (el.classList.contains('gift-sub')) activityClasses.push('gift-sub');
+                if (el.classList.contains('vip-assign')) activityClasses.push('vip-assign');
+                if (el.classList.contains('birthday')) activityClasses.push('birthday');
+                if (el.classList.contains('mod-assign')) activityClasses.push('mod-assign');
+                
+                const oldClasses = ['enter-fade', 'enter-slideUp', 'enter-slideLeft', 'enter-scale', 'enter-bounce', 'enter-glitch'];
+                oldClasses.forEach(cls => el.classList.remove(cls));
+                
+                el.classList.add(`enter-${enterAnim}`);
+            }
+        });
+    }
+
+    function connectRealChat() {
+        const channel = channelInput.value.trim() || '1diwan';
+        
+        if (realChatReconnectAttempts >= realChatMaxReconnectAttempts) {
+            realChatStatus.textContent = '❌ Не удалось подключиться';
+            realChatStatus.style.color = '#ef5350';
+            console.log('❌ Превышено количество попыток подключения к реальному чату');
+            return;
+        }
+        
+        if (realChatSocket) {
+            try {
+                realChatSocket.close();
+            } catch (e) {}
+            realChatSocket = null;
+        }
+
+        setTimeout(() => {
+            try {
+                realChatSocket = new WebSocket("wss://irc-ws.chat.twitch.tv:443");
+            } catch (e) {
+                console.error('❌ Ошибка создания WebSocket:', e);
+                realChatStatus.textContent = '❌ Ошибка создания соединения';
+                realChatStatus.style.color = '#ef5350';
+                return;
+            }
+            
+            let connectionTimeout = setTimeout(() => {
+                if (realChatSocket && realChatSocket.readyState !== WebSocket.OPEN) {
+                    console.warn('⏱ Таймаут подключения к реальному чату');
+                    realChatStatus.textContent = '⏱ Таймаут';
+                    realChatStatus.style.color = '#ffa726';
+                    try {
+                        realChatSocket.close();
+                    } catch (e) {}
+                    realChatSocket = null;
+                    scheduleReconnect();
+                }
+            }, 5000);
+            
+            realChatSocket.onopen = () => {
+                clearTimeout(connectionTimeout);
+                console.log(`📺 Реальный чат подключен: #${channel}`);
+                realChatStatus.textContent = 'Подключено ✅';
+                realChatStatus.style.color = '#4caf50';
+                realChatReconnectAttempts = 0;
+                
+                realChatSocket.send("CAP REQ :twitch.tv/tags");
+                realChatSocket.send("CAP REQ :twitch.tv/commands");
+                realChatSocket.send("CAP REQ :twitch.tv/membership");
+                realChatSocket.send("PASS SCHMOOPIIE");
+                realChatSocket.send("NICK justinfan" + Math.floor(10000 + Math.random() * 90000));
+                realChatSocket.send(`JOIN #${channel}`);
+            };
+
+            realChatSocket.onmessage = (event) => {
+                const raw = event.data;
+                if (!raw.includes("PRIVMSG")) return;
+
+                const userMatch = raw.match(/display-name=([^;]*)/);
+                const loginMatch = raw.match(/:(\w+)!/);
+                const user = userMatch?.[1] || loginMatch?.[1] || "unknown";
+
+                const tmiTarget = `PRIVMSG #${channel} :`;
+                const index = raw.indexOf(tmiTarget);
+                if (index === -1) return;
+
+                const text = raw.substring(index + tmiTarget.length).trim();
+                const colorMatch = raw.match(/color=([^;]*)/);
+                const color = colorMatch?.[1] || '#ffffff';
+                const badgesMatch = raw.match(/badges=([^;]*)/);
+                const badges = badgesMatch?.[1] || "";
+
+                let twitchEmotesRaw = "";
+                const tags = raw.split(";");
+                for (let t of tags) {
+                    if (t.startsWith("emotes=")) {
+                        twitchEmotesRaw = t.split("=")[1] || "";
+                        break;
+                    }
+                }
+
+                const activity = detectActivity ? detectActivity(text, user, badges) : { class: '' };
+                
+                if (typeof processRealMessageForStats === 'function') {
+                    processRealMessageForStats(user, text, badges);
+                }
+                
+                addRealMessage(user, text, color, badges, activity, twitchEmotesRaw);
+            };
+
+            realChatSocket.onclose = (event) => {
+                clearTimeout(connectionTimeout);
+                console.log(`📺 Реальный чат отключен. Код: ${event.code}, причина: ${event.reason}`);
+                
+                if (event.code === 1000) {
+                    realChatStatus.textContent = 'Отключено';
+                    realChatStatus.style.color = '#888';
+                    return;
+                }
+                
+                if (!event.wasClean && isRealChatMode) {
+                    realChatReconnectAttempts++;
+                    scheduleReconnect();
+                }
+            };
+
+            realChatSocket.onerror = (err) => {
+                clearTimeout(connectionTimeout);
+                console.error('📺 Ошибка реального чата:', err);
+                realChatStatus.textContent = '⚠️ Ошибка';
+                realChatStatus.style.color = '#ffa726';
+            };
+        }, 500);
+    }
+
+    function scheduleReconnect() {
+        if (!isRealChatMode) return;
+        if (realChatReconnectAttempts >= realChatMaxReconnectAttempts) {
+            realChatStatus.textContent = '❌ Не удалось подключиться';
+            realChatStatus.style.color = '#ef5350';
+            return;
+        }
+        
+        const delay = Math.min(10000 * Math.pow(1.5, realChatReconnectAttempts), 60000);
+        realChatStatus.textContent = `Переподключение через ${Math.round(delay/1000)}с...`;
+        realChatStatus.style.color = '#ffa726';
+        console.log(`📺 Переподключение через ${delay}ms... (попытка ${realChatReconnectAttempts})`);
+        
+        setTimeout(() => {
+            if (isRealChatMode) {
+                connectRealChat();
+            }
+        }, delay);
+    }
+
+    // ==========================================
+    // ПЕРЕМЕННЫЕ ДЛЯ БЛОКИРОВКИ СПАМА
+    // ==========================================
+    let isRemovingMessages = false;
+    let pendingMessages = [];
+
+    function addRealMessage(user, rawText, color, badges, activity, twitchEmotesRaw) {
+        realChatEmpty.style.display = 'none';
+        
+        if (isRemovingMessages) {
+            pendingMessages.push({ user, rawText, color, badges, activity, twitchEmotesRaw });
+            console.log(`⏳ Сообщение в очереди (${pendingMessages.length})`);
+            return;
+        }
+        
+        const el = document.createElement('div');
+        el.className = 'msg';
+        
+        if (badges && badges.includes('broadcaster')) {
+            el.classList.add('broadcaster');
+        }
+        if (badges && badges.includes('moderator')) {
+            el.classList.add('moderator');
+        }
+        if (badges && badges.includes('vip')) {
+            el.classList.add('vip');
+        }
+        
+        if (activity && activity.class) {
+            el.classList.add(activity.class);
+            el.classList.add('activity');
+        }
+
+        const showTimeVal = showTime.checked;
+        const fontSizeVal = parseInt(fontSize.value) || 22;
+        const showAnimationsVal = showAnimations.checked;
+        const enterAnim = enterAnimation ? enterAnimation.value : 'slideUp';
+        const exitAnim = exitAnimation ? exitAnimation.value : 'slideOut';
+        const maxMessagesVal = parseInt(maxMessages.value) || 10;
+
+        el.style.fontSize = `${fontSizeVal}px`;
+
+        if (showAnimationsVal) {
+            el.classList.add(`enter-${enterAnim}`);
+        }
+
+        const now = new Date();
+        const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+        
+        let badgeHTML = '';
+        if (badges) {
+            const badgeList = badges.split(',');
+            badgeList.forEach(b => {
+                const parts = b.split('/');
+                const set = parts[0];
+                const version = parts[1] || '1';
+                
+                const url = channelBadgeMap?.[set]?.[version] || badgeMap?.[set]?.[version];
+                if (url) {
+                    badgeHTML += `<img class="badge" src="${url}" alt="${set}" title="${set}" style="width:18px; height:18px; vertical-align:middle; margin-right:2px; display:inline-block; border-radius:4px;">`;
+                } else {
+                    const fallbackIcons = {
+                        'subscriber': '💜',
+                        'broadcaster': '🎤',
+                        'moderator': '🛡️',
+                        'vip': '👑',
+                        'partner': '⭐',
+                        'founder': '👑',
+                        'bits': '💎',
+                        'staff': '🔧',
+                        'admin': '⚡',
+                        'global_mod': '🌍'
+                    };
+                    const icon = fallbackIcons[set] || '●';
+                    if (set === 'subscriber' || set === 'broadcaster' || set === 'moderator' || set === 'vip') {
+                        badgeHTML += `<span class="badge-fallback" style="display:inline-block; margin-right:2px; font-size:0.9em; vertical-align:middle;">${icon}</span>`;
+                    }
+                }
+            });
+        }
+
+        const timeHTML = showTimeVal ? `<span class="time">[${timeStr}]</span>` : '';
+
+        let parsedHTML = rawText;
+        if (typeof parseAllEmotes === 'function') {
+            parsedHTML = parseAllEmotes(rawText, twitchEmotesRaw || '');
+        }
+
+        let activityIcon = '';
+        if (activity && activity.type === 'first-message') {
+            activityIcon = '<span class="first-icon">🌸</span>';
+        }
+
+        el.innerHTML = `
+            ${timeHTML}
+            ${badgeHTML}
+            ${activityIcon}
+            <span class="username" style="color:${color}">${escapeHTML(user)}</span>: ${parsedHTML}
+        `;
+
+        realChatMessages.prepend(el);
+        
+        const currentCount = realChatMessages.children.length;
+        if (currentCount > maxMessagesVal) {
+            const toRemove = currentCount - maxMessagesVal;
+            isRemovingMessages = true;
+            removeOldMessages(toRemove, showAnimationsVal, enterAnim, exitAnim, () => {
+                isRemovingMessages = false;
+                processPendingMessages();
+            });
+        }
+        
+        const hideSec = parseInt(hideTime.value) || 20;
+        if (hideSec > 0 && showAnimationsVal) {
+            const timer = setTimeout(() => {
+                if (el.isConnected) {
+                    el.classList.remove(`enter-${enterAnim}`);
+                    el.classList.add(`exit-${exitAnim}`);
+                    setTimeout(() => {
+                        if (el.isConnected) {
+                            el.remove();
+                        }
+                    }, 500);
+                }
+            }, hideSec * 1000);
+            if (!window.realChatTimers) window.realChatTimers = [];
+            window.realChatTimers.push(timer);
+        }
+    }
+
+    function processPendingMessages() {
+        if (pendingMessages.length === 0) return;
+        
+        console.log(`📨 Обработка очереди (${pendingMessages.length}) сообщений`);
+        const msg = pendingMessages.shift();
+        addRealMessage(msg.user, msg.rawText, msg.color, msg.badges, msg.activity, msg.twitchEmotesRaw);
+    }
+
+    function removeOldMessages(count, showAnimations, enterAnim, exitAnim, callback) {
+        if (count <= 0) {
+            if (callback) callback();
+            return;
+        }
+        
+        let removed = 0;
+        
+        function removeNext() {
+            if (removed >= count) {
+                if (callback) callback();
+                return;
+            }
+            
+            const lastChild = realChatMessages.lastElementChild;
+            if (!lastChild) {
+                if (callback) callback();
+                return;
+            }
+            
+            if (showAnimations) {
+                lastChild.classList.remove(`enter-${enterAnim}`);
+                lastChild.classList.add(`exit-${exitAnim}`);
+                setTimeout(() => {
+                    if (lastChild.isConnected) {
+                        lastChild.remove();
+                    }
+                    removed++;
+                    setTimeout(removeNext, 50);
+                }, 200);
+            } else {
+                lastChild.remove();
+                removed++;
+                setTimeout(removeNext, 10);
+            }
+        }
+        
+        removeNext();
+    }
+
+    toggleBtn.addEventListener('click', () => {
+        isRealChatMode = !isRealChatMode;
+        
+        realChatReconnectAttempts = 0;
+        
+        if (window.realChatTimers) {
+            window.realChatTimers.forEach(timer => clearTimeout(timer));
+            window.realChatTimers = [];
+        }
+        
+        if (isRealChatMode) {
+            previewChat.style.display = 'none';
+            realChatContainer.style.display = 'flex';
+            toggleBtn.textContent = '🎨 Вернуться к превью';
+            toggleBtn.classList.add('toggle-btn-active');
+            previewTitle.textContent = '📺 Реальный чат';
+            
+            applySettingsToRealChat();
+            connectRealChat();
+            
+            realChatMessages.innerHTML = '';
+            realChatEmpty.style.display = 'flex';
+            realChatStatus.textContent = 'Подключение...';
+            realChatStatus.style.color = '#ffa726';
+        } else {
+            previewChat.style.display = 'flex';
+            realChatContainer.style.display = 'none';
+            toggleBtn.textContent = '📺 Показать реальный чат';
+            toggleBtn.classList.remove('toggle-btn-active');
+            previewTitle.textContent = 'Живое превью';
+            
+            if (realChatSocket) {
+                try {
+                    realChatSocket.close();
+                } catch (e) {}
+                realChatSocket = null;
+            }
+        }
+    });
+
+    const originalGenerateUrl = generateUrl;
+    generateUrl = function() {
+        originalGenerateUrl();
+        if (isRealChatMode) {
+            connectRealChat();
+        }
+    };
+
+    console.log('📺 Режим реального чата готов');
+</script>
+
+</body>
+</html>

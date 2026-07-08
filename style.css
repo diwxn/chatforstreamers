@@ -1,0 +1,724 @@
+/* ==========================================
+   ОСНОВНЫЕ НАСТРОЙКИ КОНТЕЙНЕРА
+   ========================================== */
+html, body {
+    background: transparent !important;
+    color: white;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden !important;
+}
+
+#chat {
+    font-size: var(--chat-font-size, 22px);
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    padding: 12px 10px 12px 10px;
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: flex-start;
+    overflow-y: scroll;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+#chat::-webkit-scrollbar {
+    display: none;
+    width: 0 !important;
+    background: transparent;
+}
+
+/* ==========================================
+   СТИЛИ СООБЩЕНИЯ
+   ========================================== */
+.message {
+    background: rgba(0, 0, 0, 0.6) !important;
+    padding: 8px 14px;
+    border-radius: 12px;
+    margin-bottom: 8px;
+    line-height: 1.6;
+    display: block;
+    word-break: break-word;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
+    box-sizing: border-box;
+    flex-shrink: 0;
+}
+
+/* ==========================================
+   ВСЕ СМАЙЛИКИ (ОБЩИЙ РАЗМЕР)
+   ========================================== */
+/* Все изображения в чате */
+#chat img {
+    height: 1.3em !important;
+    width: auto !important;
+    max-height: 30px !important;
+    min-height: 18px !important;
+    display: inline-block !important;
+    vertical-align: middle !important;
+    margin: 0 2px !important;
+    border: none !important;
+    background: transparent !important;
+    image-rendering: auto !important;
+}
+
+/* Специально для смайликов (Twitch, 7TV, BTTV, FFZ) */
+.emote {
+    height: 1.3em !important;
+    width: auto !important;
+    max-height: 30px !important;
+    min-height: 18px !important;
+    display: inline-block !important;
+    vertical-align: middle !important;
+    margin: 0 2px !important;
+    border: none !important;
+    background: transparent !important;
+    image-rendering: auto !important;
+}
+
+/* Для Unicode эмодзи */
+.text-content {
+    display: inline !important;
+    font-size: inherit !important;
+}
+
+/* ==========================================
+   ВНУТРЕННИЕ ЭЛЕМЕНТЫ
+   ========================================== */
+.time {
+    color: #888;
+    font-size: 0.8em;
+    margin-right: 6px;
+    flex-shrink: 0;
+}
+
+.badge {
+    width: 1.1em;
+    height: 1.1em;
+    vertical-align: middle;
+    margin-right: 3px;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.username {
+    font-weight: bold;
+    display: inline;
+    flex-shrink: 0;
+}
+
+/* ==========================================
+   АНИМАЦИИ (ЧЕРЕЗ КЛАССЫ)
+   ========================================== */
+/* Появление */
+@keyframes enterFade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes enterSlideUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes enterSlideLeft {
+    from { opacity: 0; transform: translateX(-40px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes enterScale {
+    from { opacity: 0; transform: scale(0.6); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes enterBounce {
+    0% { opacity: 0; transform: scale(0.3); }
+    50% { opacity: 1; transform: scale(1.05); }
+    70% { transform: scale(0.95); }
+    100% { transform: scale(1); }
+}
+
+@keyframes enterGlitch {
+    0% { opacity: 0; transform: translateX(-10px) skewX(-5deg); }
+    20% { opacity: 1; transform: translateX(5px) skewX(3deg); }
+    40% { transform: translateX(-5px) skewX(-2deg); }
+    60% { transform: translateX(3px) skewX(1deg); }
+    80% { transform: translateX(-2px) skewX(0deg); }
+    100% { transform: translateX(0) skewX(0); }
+}
+
+/* Применение анимаций появления */
+.message.enter-fade {
+    animation: enterFade 0.4s ease-out forwards;
+}
+
+.message.enter-slideUp {
+    animation: enterSlideUp 0.4s ease-out forwards;
+}
+
+.message.enter-slideLeft {
+    animation: enterSlideLeft 0.4s ease-out forwards;
+}
+
+.message.enter-scale {
+    animation: enterScale 0.4s ease-out forwards;
+}
+
+.message.enter-bounce {
+    animation: enterBounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.message.enter-glitch {
+    animation: enterGlitch 0.5s ease-out forwards;
+}
+
+/* ==========================================
+   АНИМАЦИИ ИСЧЕЗНОВЕНИЯ
+   ========================================== */
+@keyframes exitFadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+@keyframes exitSlideOut {
+    from { opacity: 1; transform: translateX(0); }
+    to { opacity: 0; transform: translateX(60px); }
+}
+
+@keyframes exitScaleOut {
+    from { opacity: 1; transform: scale(1); }
+    to { opacity: 0; transform: scale(0.3); }
+}
+
+@keyframes exitShrink {
+    from { opacity: 1; transform: scale(1) translateY(0); max-height: 200px; padding: 8px 14px; margin-bottom: 8px; }
+    to { opacity: 0; transform: scale(0.5) translateY(-20px); max-height: 0; padding: 0 14px; margin-bottom: 0; }
+}
+
+@keyframes exitExplode {
+    0% { opacity: 1; transform: scale(1) rotate(0deg); }
+    30% { opacity: 1; transform: scale(1.2) rotate(3deg); }
+    100% { opacity: 0; transform: scale(0.1) rotate(20deg); }
+}
+
+/* Применение анимаций исчезновения */
+.message.exit-fadeOut {
+    animation: exitFadeOut 0.4s ease-in forwards;
+}
+
+.message.exit-slideOut {
+    animation: exitSlideOut 0.4s ease-in forwards;
+}
+
+.message.exit-scaleOut {
+    animation: exitScaleOut 0.4s ease-in forwards;
+}
+
+.message.exit-shrink {
+    animation: exitShrink 0.5s ease-in forwards;
+    overflow: hidden;
+}
+
+.message.exit-explode {
+    animation: exitExplode 0.5s ease-in forwards;
+}
+
+/* ==========================================
+   РОЛИ (ЦВЕТНЫЕ ПОЛОСЫ СЛЕВА)
+   ========================================== */
+.broadcaster {
+    border-left: 4px solid #ff0000;
+}
+
+.moderator {
+    border-left: 4px solid #00ff00;
+}
+
+.vip {
+    border-left: 4px solid #ff00ff;
+}
+
+/* ==========================================
+   АДАПТИВНОСТЬ
+   ========================================== */
+@media (max-width: 600px) {
+    #chat {
+        padding: 8px 6px;
+    }
+    
+    .message {
+        padding: 6px 10px;
+        font-size: calc(var(--chat-font-size, 22px) * 0.8);
+    }
+    
+    .badge {
+        width: 0.9em;
+        height: 0.9em;
+    }
+    
+    #chat img {
+        height: 1.1em !important;
+        max-height: 22px !important;
+        min-height: 14px !important;
+    }
+}
+
+/* ==========================================
+   СКРОЛЛБАР
+   ========================================== */
+#chat::-webkit-scrollbar {
+    display: none;
+    width: 0 !important;
+    background: transparent;
+}
+
+#chat {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+/* ==========================================
+   СТИЛИ ДЛЯ ПРЕВЬЮ (панель управления)
+   ========================================== */
+.preview-chat .msg {
+    background: rgba(0, 0, 0, 0.5);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 16px;
+    line-height: 1.5;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+    margin-bottom: 4px;
+}
+
+/* Все изображения в превью */
+.preview-chat .msg img {
+    height: 1.3em !important;
+    width: auto !important;
+    max-height: 28px !important;
+    min-height: 16px !important;
+    display: inline-block !important;
+    vertical-align: middle !important;
+    margin: 0 2px !important;
+    border: none !important;
+    background: transparent !important;
+}
+
+.preview-chat .msg .emote {
+    height: 1.3em !important;
+    width: auto !important;
+    max-height: 28px !important;
+    min-height: 16px !important;
+    display: inline-block !important;
+    vertical-align: middle !important;
+    margin: 0 2px !important;
+}
+
+.preview-chat .msg .time {
+    color: #888;
+    font-size: 0.75em;
+    margin-right: 4px;
+    flex-shrink: 0;
+}
+
+.preview-chat .msg .badge {
+    width: 1em;
+    height: 1em;
+    vertical-align: middle;
+    flex-shrink: 0;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.preview-chat .msg .username {
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.preview-chat .msg .text-content {
+    display: inline;
+    word-break: break-word;
+}
+
+/* ==========================================
+   АНИМАЦИИ ДЛЯ ПРЕВЬЮ
+   ========================================== */
+.preview-chat .msg.enter-fade {
+    animation: enterFade 0.4s ease-out forwards;
+}
+
+.preview-chat .msg.enter-slideUp {
+    animation: enterSlideUp 0.4s ease-out forwards;
+}
+
+.preview-chat .msg.enter-slideLeft {
+    animation: enterSlideLeft 0.4s ease-out forwards;
+}
+
+.preview-chat .msg.enter-scale {
+    animation: enterScale 0.4s ease-out forwards;
+}
+
+.preview-chat .msg.enter-bounce {
+    animation: enterBounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.preview-chat .msg.enter-glitch {
+    animation: enterGlitch 0.5s ease-out forwards;
+}
+
+.preview-chat .msg.exit-fadeOut {
+    animation: exitFadeOut 0.4s ease-in forwards;
+}
+
+.preview-chat .msg.exit-slideOut {
+    animation: exitSlideOut 0.4s ease-in forwards;
+}
+
+.preview-chat .msg.exit-scaleOut {
+    animation: exitScaleOut 0.4s ease-in forwards;
+}
+
+.preview-chat .msg.exit-shrink {
+    animation: exitShrink 0.5s ease-in forwards;
+    overflow: hidden;
+}
+
+.preview-chat .msg.exit-explode {
+    animation: exitExplode 0.5s ease-in forwards;
+}
+
+.preview-chat .msg.hide {
+    opacity: 0;
+    transform: translateX(-20px);
+    transition: all 0.5s ease;
+}
+
+/* ==========================================
+   АНИМАЦИИ ДЛЯ ПРЕВЬЮ (дополнительно)
+   ========================================== */
+@keyframes enterFade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes enterSlideUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes enterSlideLeft {
+    from { opacity: 0; transform: translateX(-40px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes enterScale {
+    from { opacity: 0; transform: scale(0.6); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes enterBounce {
+    0% { opacity: 0; transform: scale(0.3); }
+    50% { opacity: 1; transform: scale(1.05); }
+    70% { transform: scale(0.95); }
+    100% { transform: scale(1); }
+}
+
+@keyframes enterGlitch {
+    0% { opacity: 0; transform: translateX(-10px) skewX(-5deg); }
+    20% { opacity: 1; transform: translateX(5px) skewX(3deg); }
+    40% { transform: translateX(-5px) skewX(-2deg); }
+    60% { transform: translateX(3px) skewX(1deg); }
+    80% { transform: translateX(-2px) skewX(0deg); }
+    100% { transform: translateX(0) skewX(0); }
+}
+
+@keyframes exitFadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+@keyframes exitSlideOut {
+    from { opacity: 1; transform: translateX(0); }
+    to { opacity: 0; transform: translateX(60px); }
+}
+
+@keyframes exitScaleOut {
+    from { opacity: 1; transform: scale(1); }
+    to { opacity: 0; transform: scale(0.3); }
+}
+
+@keyframes exitShrink {
+    from { opacity: 1; transform: scale(1) translateY(0); max-height: 200px; padding: 8px 14px; margin-bottom: 8px; }
+    to { opacity: 0; transform: scale(0.5) translateY(-20px); max-height: 0; padding: 0 14px; margin-bottom: 0; }
+}
+
+@keyframes exitExplode {
+    0% { opacity: 1; transform: scale(1) rotate(0deg); }
+    30% { opacity: 1; transform: scale(1.2) rotate(3deg); }
+    100% { opacity: 0; transform: scale(0.1) rotate(20deg); }
+}
+
+/* ==========================================
+   ВЫДЕЛЕНИЕ АКТИВНОСТЕЙ
+   ========================================== */
+
+/* ---------- Подарок подписки ---------- */
+.message.gift-sub {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.25), rgba(255, 165, 0, 0.15)) !important;
+    border: 2px solid #ffd700;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+    animation: giftPulse 2s ease-in-out infinite;
+}
+
+.message.gift-sub .gift-icon {
+    display: inline-block;
+    margin-right: 8px;
+    animation: giftSpin 3s linear infinite;
+}
+
+@keyframes giftPulse {
+    0%, 100% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.3); }
+    50% { box-shadow: 0 0 40px rgba(255, 215, 0, 0.6); }
+}
+
+@keyframes giftSpin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* ---------- Рейд ---------- */
+.message.raid {
+    background: linear-gradient(135deg, rgba(169, 112, 255, 0.3), rgba(100, 65, 165, 0.2)) !important;
+    border: 2px solid #a970ff;
+    box-shadow: 0 0 30px rgba(169, 112, 255, 0.4);
+    animation: raidGlow 1.5s ease-in-out infinite;
+}
+
+.message.raid .raid-icon {
+    display: inline-block;
+    margin-right: 8px;
+    animation: raidShake 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes raidGlow {
+    0%, 100% { box-shadow: 0 0 30px rgba(169, 112, 255, 0.4); }
+    50% { box-shadow: 0 0 60px rgba(169, 112, 255, 0.8); }
+}
+
+@keyframes raidShake {
+    0% { transform: translateX(-3px) rotate(-5deg); }
+    100% { transform: translateX(3px) rotate(5deg); }
+}
+
+/* ---------- Первое сообщение ---------- */
+.message.first-message {
+    background: linear-gradient(135deg, rgba(66, 165, 245, 0.25), rgba(13, 71, 161, 0.15)) !important;
+    border: 2px solid #42a5f5;
+    box-shadow: 0 0 20px rgba(66, 165, 245, 0.3);
+}
+
+.message.first-message .first-icon {
+    display: inline-block;
+    margin-right: 6px;
+    font-size: 1.2em;
+    animation: firstSparkle 2s ease-in-out infinite;
+}
+
+@keyframes firstSparkle {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.3); }
+}
+
+/* ---------- Назначение роли ---------- */
+.message.role-assign {
+    background: linear-gradient(135deg, rgba(255, 234, 0, 0.2), rgba(255, 193, 7, 0.1)) !important;
+    border: 2px solid #ffea00;
+    box-shadow: 0 0 20px rgba(255, 234, 0, 0.3);
+}
+
+.message.role-assign .role-icon {
+    display: inline-block;
+    margin-right: 6px;
+    animation: roleBounce 1s ease-in-out infinite;
+}
+
+@keyframes roleBounce {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.3); }
+}
+
+/* ---------- День рождения ---------- */
+.message.birthday {
+    background: linear-gradient(135deg, rgba(255, 128, 171, 0.25), rgba(255, 64, 129, 0.15)) !important;
+    border: 2px solid #ff80ab;
+    box-shadow: 0 0 25px rgba(255, 128, 171, 0.4);
+    animation: birthdayConfetti 3s ease-in-out infinite;
+}
+
+.message.birthday .birthday-icon {
+    display: inline-block;
+    margin-right: 6px;
+    animation: birthdaySpin 4s linear infinite;
+}
+
+@keyframes birthdayConfetti {
+    0%, 100% { box-shadow: 0 0 25px rgba(255, 128, 171, 0.4); }
+    33% { box-shadow: 0 0 50px rgba(255, 235, 59, 0.4); }
+    66% { box-shadow: 0 0 50px rgba(76, 175, 80, 0.4); }
+}
+
+@keyframes birthdaySpin {
+    0% { transform: rotate(0deg) scale(1); }
+    50% { transform: rotate(180deg) scale(1.2); }
+    100% { transform: rotate(360deg) scale(1); }
+}
+
+/* ---------- Общие иконки для активностей ---------- */
+.message .activity-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 0.7em;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+.message .activity-badge.gift {
+    background: #ffd700;
+    color: #000;
+}
+
+.message .activity-badge.raid {
+    background: #a970ff;
+    color: #fff;
+}
+
+.message .activity-badge.first {
+    background: #42a5f5;
+    color: #fff;
+}
+
+.message .activity-badge.role {
+    background: #ffea00;
+    color: #000;
+}
+
+.message .activity-badge.birthday {
+    background: #ff80ab;
+    color: #fff;
+}
+
+/* ==========================================
+   ВЫДЕЛЕНИЕ АКТИВНОСТЕЙ (РАМКА ВОКРУГ)
+   ========================================== */
+
+/* Общий стиль для всех сообщений с активностями */
+.message.activity {
+    border: 2px solid transparent !important;
+    border-radius: 12px !important;
+    padding: 8px 14px !important;
+}
+
+/* ---------- 1. РЕЙД (зелёная рамка) ---------- */
+.message.raid {
+    border-color: #4caf50 !important;
+    box-shadow: 0 0 15px rgba(76, 175, 80, 0.15) !important;
+}
+
+/* ---------- 2. ПЕРВОЕ СООБЩЕНИЕ (розовая рамка) ---------- */
+.message.first-message {
+    border-color: #f06292 !important;
+    box-shadow: 0 0 15px rgba(240, 98, 146, 0.15) !important;
+}
+
+/* ---------- 3. ПОДАРОК ПОДПИСКИ (золотая рамка) ---------- */
+.message.gift-sub {
+    border-color: #ffd700 !important;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.15) !important;
+    opacity: 0.9 !important;
+}
+
+/* ---------- 4. VIP (золотая рамка, ярче) ---------- */
+.message.vip-assign {
+    border-color: #ffb300 !important;
+    box-shadow: 0 0 20px rgba(255, 179, 0, 0.2) !important;
+}
+
+/* ---------- 5. ДЕНЬ РОЖДЕНИЯ (оранжевая рамка) ---------- */
+.message.birthday {
+    border-color: #ff8a65 !important;
+    box-shadow: 0 0 15px rgba(255, 138, 101, 0.15) !important;
+}
+
+/* ---------- 6. МОДЕРАТОР (синяя рамка) ---------- */
+.message.mod-assign {
+    border-color: #42a5f5 !important;
+    box-shadow: 0 0 15px rgba(66, 165, 245, 0.15) !important;
+}
+
+/* Анимация для рамок (лёгкое свечение) */
+.message.activity {
+    animation: borderGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes borderGlow {
+    0% { box-shadow: 0 0 10px rgba(255,255,255,0.05); }
+    100% { box-shadow: 0 0 20px rgba(255,255,255,0.1); }
+}
+
+@keyframes livePulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
+        .stats-live.live {
+            color: #4caf50 !important;
+            animation: livePulse 1.5s ease-in-out infinite;
+        }
+
+        .stats-live.offline {
+            color: #ef5350 !important;
+            animation: none !important;
+        }
+                .stats-live.loading {
+            color: #ffa726 !important;
+            animation: livePulse 1.5s ease-in-out infinite;
+        }
+
+        /* ==========================================
+   ПЕРВОЕ СООБЩЕНИЕ (FIRST MESSAGE)
+   ========================================== */
+.message.first-message {
+    border: 2px solid #ff69b4 !important; /* Розовая обводка */
+    box-shadow: 0 0 20px rgba(255, 105, 180, 0.25) !important;
+    background: linear-gradient(135deg, rgba(255, 105, 180, 0.08), rgba(255, 20, 147, 0.03)) !important;
+}
+
+/* Добавляем иконку первого сообщения */
+.message.first-message .first-icon {
+    display: inline-block;
+    margin-right: 6px;
+    font-size: 1em;
+    vertical-align: middle;
+    animation: firstSparkle 2s ease-in-out infinite;
+}
+
+/* Для совместимости с обводкой активности */
+.message.first-message.activity {
+    border: 2px solid #ff69b4 !important;
+    box-shadow: 0 0 20px rgba(255, 105, 180, 0.25) !important;
+}
+
+@keyframes firstSparkle {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(1.2); }
+}
