@@ -1,4 +1,8 @@
-```
+Вот ваш **полный исправленный `index.html`** с готовым решением. Все настройки внешнего вида теперь работают и для превью, и для реального чата.
+
+---
+
+```html
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -1731,26 +1735,27 @@
         const showAnimations = document.getElementById('showAnimations');
         const enterAnimation = document.getElementById('enterAnimation');
         const exitAnimation = document.getElementById('exitAnimation');
+
         // ==========================================
-// НОВЫЕ НАСТРОЙКИ ВНЕШНЕГО ВИДА
-// ==========================================
-const bgColor = document.getElementById('bgColor');
-const bgColorValue = document.getElementById('bgColorValue');
-const textColor = document.getElementById('textColor');
-const textColorValue = document.getElementById('textColorValue');
-const bgOpacity = document.getElementById('bgOpacity');
-const bgOpacityValue = document.getElementById('bgOpacityValue');
-const borderRadius = document.getElementById('borderRadius');
-const borderRadiusValue = document.getElementById('borderRadiusValue');
-const messageGap = document.getElementById('messageGap');
-const messageGapValue = document.getElementById('messageGapValue');
-const messageShadow = document.getElementById('messageShadow');
-const fontFamily = document.getElementById('fontFamily');
-const fontWeight = document.getElementById('fontWeight');
-const lineHeight = document.getElementById('lineHeight');
-const lineHeightValue = document.getElementById('lineHeightValue');
-const animationSpeed = document.getElementById('animationSpeed');
-const animationSpeedValue = document.getElementById('animationSpeedValue');
+        // НОВЫЕ НАСТРОЙКИ ВНЕШНЕГО ВИДА
+        // ==========================================
+        const bgColor = document.getElementById('bgColor');
+        const bgColorValue = document.getElementById('bgColorValue');
+        const textColor = document.getElementById('textColor');
+        const textColorValue = document.getElementById('textColorValue');
+        const bgOpacity = document.getElementById('bgOpacity');
+        const bgOpacityValue = document.getElementById('bgOpacityValue');
+        const borderRadius = document.getElementById('borderRadius');
+        const borderRadiusValue = document.getElementById('borderRadiusValue');
+        const messageGap = document.getElementById('messageGap');
+        const messageGapValue = document.getElementById('messageGapValue');
+        const messageShadow = document.getElementById('messageShadow');
+        const fontFamily = document.getElementById('fontFamily');
+        const fontWeight = document.getElementById('fontWeight');
+        const lineHeight = document.getElementById('lineHeight');
+        const lineHeightValue = document.getElementById('lineHeightValue');
+        const animationSpeed = document.getElementById('animationSpeed');
+        const animationSpeedValue = document.getElementById('animationSpeedValue');
 
         // ==========================================
         // ПЕРЕМЕННЫЕ ДЛЯ ПРЕВЬЮ
@@ -2778,66 +2783,67 @@ const animationSpeedValue = document.getElementById('animationSpeedValue');
             restartPreview();
             if (isRealChatMode) applySettingsToRealChat();
         });
-// ==========================================
-// ОБРАБОТЧИКИ ДЛЯ НОВЫХ НАСТРОЕК ВНЕШНЕГО ВИДА
-// ==========================================
 
-bgColor.addEventListener('input', () => {
-    bgColorValue.textContent = bgColor.value;
-    generateUrl();
-    applyAppearanceToPreview();
-});
+        // ==========================================
+        // ОБРАБОТЧИКИ ДЛЯ НОВЫХ НАСТРОЕК ВНЕШНЕГО ВИДА
+        // ==========================================
+        bgColor.addEventListener('input', () => {
+            bgColorValue.textContent = bgColor.value;
+            generateUrl();
+            applyAppearance();
+        });
 
-textColor.addEventListener('input', () => {
-    textColorValue.textContent = textColor.value;
-    generateUrl();
-    applyAppearanceToPreview();
-});
+        textColor.addEventListener('input', () => {
+            textColorValue.textContent = textColor.value;
+            generateUrl();
+            applyAppearance();
+        });
 
-bgOpacity.addEventListener('input', () => {
-    bgOpacityValue.textContent = `${bgOpacity.value}%`;
-    generateUrl();
-    applyAppearanceToPreview();
-});
+        bgOpacity.addEventListener('input', () => {
+            bgOpacityValue.textContent = `${bgOpacity.value}%`;
+            generateUrl();
+            applyAppearance();
+        });
 
-borderRadius.addEventListener('input', () => {
-    borderRadiusValue.textContent = `${borderRadius.value}px`;
-    generateUrl();
-    applyAppearanceToPreview();
-});
+        borderRadius.addEventListener('input', () => {
+            borderRadiusValue.textContent = `${borderRadius.value}px`;
+            generateUrl();
+            applyAppearance();
+        });
 
-messageGap.addEventListener('input', () => {
-    messageGapValue.textContent = `${messageGap.value}px`;
-    generateUrl();
-    applyAppearanceToPreview();
-});
+        messageGap.addEventListener('input', () => {
+            messageGapValue.textContent = `${messageGap.value}px`;
+            generateUrl();
+            applyAppearance();
+        });
 
-messageShadow.addEventListener('change', () => {
-    generateUrl();
-    applyAppearanceToPreview();
-});
+        messageShadow.addEventListener('change', () => {
+            generateUrl();
+            applyAppearance();
+        });
 
-fontFamily.addEventListener('change', () => {
-    generateUrl();
-    applyAppearanceToPreview();
-});
+        fontFamily.addEventListener('change', () => {
+            generateUrl();
+            applyAppearance();
+        });
 
-fontWeight.addEventListener('change', () => {
-    generateUrl();
-    applyAppearanceToPreview();
-});
+        fontWeight.addEventListener('change', () => {
+            generateUrl();
+            applyAppearance();
+        });
 
-lineHeight.addEventListener('input', () => {
-    lineHeightValue.textContent = lineHeight.value;
-    generateUrl();
-    applyAppearanceToPreview();
-});
+        lineHeight.addEventListener('input', () => {
+            lineHeightValue.textContent = lineHeight.value;
+            generateUrl();
+            applyAppearance();
+        });
 
-animationSpeed.addEventListener('input', () => {
-    animationSpeedValue.textContent = `${animationSpeed.value}ms`;
-    generateUrl();
-    applyAppearanceToPreview();
-});
+        animationSpeed.addEventListener('input', () => {
+            animationSpeedValue.textContent = `${animationSpeed.value}ms`;
+            generateUrl();
+            applyAppearance();
+        });
+
         // ==========================================
         // КОПИРОВАНИЕ
         // ==========================================
@@ -2888,8 +2894,7 @@ animationSpeed.addEventListener('input', () => {
             }, 500);
 
             setTimeout(() => {
-                applyAppearanceToPreview();
-                applyAppearanceToRealChat();
+                applyAppearance();
             }, 100);
         }
 
@@ -2932,9 +2937,9 @@ animationSpeed.addEventListener('input', () => {
         };
 
         // ==========================================
-        // ПРИМЕНЕНИЕ НАСТРОЕК ВНЕШНЕГО ВИДА К ПРЕВЬЮ
+        // ПРИМЕНЕНИЕ НАСТРОЕК ВНЕШНЕГО ВИДА (ОБЩАЯ ФУНКЦИЯ)
         // ==========================================
-        function applyAppearanceToPreview() {
+        function applyAppearance() {
             const bgColorVal = bgColor.value;
             const textColorVal = textColor.value;
             const bgOpacityVal = bgOpacity.value / 100;
@@ -2953,7 +2958,7 @@ animationSpeed.addEventListener('input', () => {
             };
             const shadowVal = shadowMap[messageShadow.value] || 'none';
 
-            // Применяем к контейнеру превью
+            // === ПРИМЕНЯЕМ К ПРЕВЬЮ ===
             const previewChat = document.getElementById('previewChat');
             if (previewChat) {
                 previewChat.style.background = `rgba(${hexToRgb(bgColorVal)}, ${bgOpacityVal})`;
@@ -2964,7 +2969,6 @@ animationSpeed.addEventListener('input', () => {
                 previewChat.style.borderRadius = borderRadiusVal;
             }
 
-            // Применяем к каждому сообщению в превью
             document.querySelectorAll('.preview-chat .msg').forEach(el => {
                 el.style.borderRadius = borderRadiusVal;
                 el.style.marginBottom = messageGapVal;
@@ -2976,7 +2980,6 @@ animationSpeed.addEventListener('input', () => {
                 el.style.color = textColorVal;
             });
 
-            // Обновляем анимации
             document.querySelectorAll('.preview-chat .msg').forEach(el => {
                 const classes = el.className.split(' ');
                 classes.forEach(cls => {
@@ -2985,31 +2988,8 @@ animationSpeed.addEventListener('input', () => {
                     }
                 });
             });
-        }
 
-        // ==========================================
-        // ПРИМЕНЕНИЕ НАСТРОЕК ВНЕШНЕГО ВИДА К РЕАЛЬНОМУ ЧАТУ
-        // ==========================================
-        function applyAppearanceToRealChat() {
-            const bgColorVal = bgColor.value;
-            const textColorVal = textColor.value;
-            const bgOpacityVal = bgOpacity.value / 100;
-            const borderRadiusVal = `${borderRadius.value}px`;
-            const messageGapVal = `${messageGap.value}px`;
-            const fontFamilyVal = fontFamily.value;
-            const fontWeightVal = fontWeight.value;
-            const lineHeightVal = lineHeight.value;
-            const animationSpeedVal = `${animationSpeed.value}ms`;
-
-            const shadowMap = {
-                'none': 'none',
-                'light': '0 2px 8px rgba(0,0,0,0.15)',
-                'medium': '0 4px 16px rgba(0,0,0,0.3)',
-                'heavy': '0 8px 32px rgba(0,0,0,0.5)'
-            };
-            const shadowVal = shadowMap[messageShadow.value] || 'none';
-
-            // Применяем через CSS-переменные
+            // === ПРИМЕНЯЕМ К РЕАЛЬНОМУ ЧАТУ ===
             document.documentElement.style.setProperty('--realchat-bg', bgColorVal);
             document.documentElement.style.setProperty('--realchat-text', textColorVal);
             document.documentElement.style.setProperty('--realchat-bg-opacity', bgOpacityVal);
@@ -3021,7 +3001,6 @@ animationSpeed.addEventListener('input', () => {
             document.documentElement.style.setProperty('--realchat-shadow', shadowVal);
             document.documentElement.style.setProperty('--realchat-animation-speed', animationSpeedVal);
 
-            // Применяем напрямую к контейнеру реального чата
             const realChatContainer = document.getElementById('realChatContainer');
             if (realChatContainer) {
                 realChatContainer.style.background = `rgba(${hexToRgb(bgColorVal)}, ${bgOpacityVal})`;
@@ -3032,7 +3011,6 @@ animationSpeed.addEventListener('input', () => {
                 realChatContainer.style.borderRadius = borderRadiusVal;
             }
 
-            // Применяем к каждому сообщению в реальном чате
             document.querySelectorAll('#realChatMessages .msg').forEach(el => {
                 el.style.borderRadius = borderRadiusVal;
                 el.style.marginBottom = messageGapVal;
@@ -3044,7 +3022,6 @@ animationSpeed.addEventListener('input', () => {
                 el.style.color = textColorVal;
             });
 
-            // Обновляем анимации для реального чата
             document.querySelectorAll('#realChatMessages .msg').forEach(el => {
                 const classes = el.className.split(' ');
                 classes.forEach(cls => {
@@ -3053,6 +3030,8 @@ animationSpeed.addEventListener('input', () => {
                     }
                 });
             });
+
+            console.log('✅ Стили применены');
         }
 
         // ==========================================
@@ -3215,7 +3194,7 @@ animationSpeed.addEventListener('input', () => {
         }
 
         // ==========================================
-        // ПОДКЛЮЧЕНИЕ К РЕАЛЬНОМУ ЧАТУ (ИСПРАВЛЕННОЕ)
+        // ПОДКЛЮЧЕНИЕ К РЕАЛЬНОМУ ЧАТУ
         // ==========================================
         function connectRealChat() {
             if (isRealChatConnecting) {
