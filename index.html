@@ -1325,6 +1325,41 @@
             font-weight: 700 !important;
             color: inherit !important;
         }
+
+        /* ==========================================
+   ПРИМЕНЕНИЕ НАСТРОЕК КО ВСЕМ КОНТЕЙНЕРАМ
+   ========================================== */
+#previewChat {
+    background: rgba(14, 14, 16, var(--chat-bg-opacity, 1)) !important;
+    color: var(--chat-text, #efeff1) !important;
+    border-radius: var(--chat-border-radius, 8px) !important;
+    font-family: var(--chat-font-family, 'Segoe UI', system-ui, sans-serif) !important;
+    font-weight: var(--chat-font-weight, 400) !important;
+    line-height: var(--chat-line-height, 1.3) !important;
+}
+
+#realChatContainer {
+    background: rgba(14, 14, 16, var(--chat-bg-opacity, 1)) !important;
+    color: var(--chat-text, #efeff1) !important;
+    border-radius: var(--chat-border-radius, 8px) !important;
+    font-family: var(--chat-font-family, 'Segoe UI', system-ui, sans-serif) !important;
+    font-weight: var(--chat-font-weight, 400) !important;
+    line-height: var(--chat-line-height, 1.3) !important;
+}
+
+#realChatMessages .msg {
+    background: rgba(0, 0, 0, 0.3) !important;
+    padding: 4px 10px !important;
+    border-radius: var(--chat-border-radius, 8px) !important;
+    margin-bottom: var(--chat-message-gap, 4px) !important;
+    box-shadow: var(--chat-shadow, 0 2px 8px rgba(0,0,0,0.15)) !important;
+    transition: all var(--chat-animation-speed, 300ms) ease !important;
+    color: var(--chat-text, #efeff1) !important;
+    font-family: var(--chat-font-family, 'Segoe UI', system-ui, sans-serif) !important;
+    font-weight: var(--chat-font-weight, 400) !important;
+    line-height: var(--chat-line-height, 1.3) !important;
+}
+
     </style>
 </head>
 <body>
@@ -2934,100 +2969,76 @@
         // ==========================================
         // ПРИМЕНЕНИЕ НАСТРОЕК ВНЕШНЕГО ВИДА (ОБЩАЯ ФУНКЦИЯ)
         // ==========================================
-        function applyAppearance() {
-            const bgColorVal = bgColor.value;
-            const textColorVal = textColor.value;
-            const bgOpacityVal = bgOpacity.value / 100;
-            const borderRadiusVal = `${borderRadius.value}px`;
-            const messageGapVal = `${messageGap.value}px`;
-            const fontFamilyVal = fontFamily.value;
-            const fontWeightVal = fontWeight.value;
-            const lineHeightVal = lineHeight.value;
-            const animationSpeedVal = `${animationSpeed.value}ms`;
+        // ==========================================
+// ПРИМЕНЕНИЕ НАСТРОЕК ВНЕШНЕГО ВИДА
+// ==========================================
+function applyAppearance() {
+    const bgColorVal = bgColor.value;
+    const textColorVal = textColor.value;
+    const bgOpacityVal = bgOpacity.value / 100;
+    const borderRadiusVal = `${borderRadius.value}px`;
+    const messageGapVal = `${messageGap.value}px`;
+    const fontFamilyVal = fontFamily.value;
+    const fontWeightVal = fontWeight.value;
+    const lineHeightVal = lineHeight.value;
+    const animationSpeedVal = `${animationSpeed.value}ms`;
 
-            const shadowMap = {
-                'none': 'none',
-                'light': '0 2px 8px rgba(0,0,0,0.15)',
-                'medium': '0 4px 16px rgba(0,0,0,0.3)',
-                'heavy': '0 8px 32px rgba(0,0,0,0.5)'
-            };
-            const shadowVal = shadowMap[messageShadow.value] || 'none';
+    const shadowMap = {
+        'none': 'none',
+        'light': '0 2px 8px rgba(0,0,0,0.15)',
+        'medium': '0 4px 16px rgba(0,0,0,0.3)',
+        'heavy': '0 8px 32px rgba(0,0,0,0.5)'
+    };
+    const shadowVal = shadowMap[messageShadow.value] || 'none';
 
-            // === ПРИМЕНЯЕМ К ПРЕВЬЮ ===
-            const previewChat = document.getElementById('previewChat');
-            if (previewChat) {
-                previewChat.style.background = `rgba(${hexToRgb(bgColorVal)}, ${bgOpacityVal})`;
-                previewChat.style.color = textColorVal;
-                previewChat.style.fontFamily = fontFamilyVal;
-                previewChat.style.fontWeight = fontWeightVal;
-                previewChat.style.lineHeight = lineHeightVal;
-                previewChat.style.borderRadius = borderRadiusVal;
-            }
+    // Применяем через CSS-переменные
+    document.documentElement.style.setProperty('--chat-bg', bgColorVal);
+    document.documentElement.style.setProperty('--chat-text', textColorVal);
+    document.documentElement.style.setProperty('--chat-bg-opacity', bgOpacityVal);
+    document.documentElement.style.setProperty('--chat-border-radius', borderRadiusVal);
+    document.documentElement.style.setProperty('--chat-message-gap', messageGapVal);
+    document.documentElement.style.setProperty('--chat-font-family', fontFamilyVal);
+    document.documentElement.style.setProperty('--chat-font-weight', fontWeightVal);
+    document.documentElement.style.setProperty('--chat-line-height', lineHeightVal);
+    document.documentElement.style.setProperty('--chat-shadow', shadowVal);
+    document.documentElement.style.setProperty('--chat-animation-speed', animationSpeedVal);
 
-            document.querySelectorAll('.preview-chat .msg').forEach(el => {
-                el.style.borderRadius = borderRadiusVal;
-                el.style.marginBottom = messageGapVal;
-                el.style.boxShadow = shadowVal;
-                el.style.transition = `all ${animationSpeedVal} ease`;
-                el.style.fontFamily = fontFamilyVal;
-                el.style.fontWeight = fontWeightVal;
-                el.style.lineHeight = lineHeightVal;
-                el.style.color = textColorVal;
-            });
+    // Применяем к превью (вручную)
+    const previewChat = document.getElementById('previewChat');
+    if (previewChat) {
+        previewChat.style.background = `rgba(${hexToRgb(bgColorVal)}, ${bgOpacityVal})`;
+        previewChat.style.color = textColorVal;
+        previewChat.style.fontFamily = fontFamilyVal;
+        previewChat.style.fontWeight = fontWeightVal;
+        previewChat.style.lineHeight = lineHeightVal;
+        previewChat.style.borderRadius = borderRadiusVal;
+    }
 
-            document.querySelectorAll('.preview-chat .msg').forEach(el => {
-                const classes = el.className.split(' ');
-                classes.forEach(cls => {
-                    if (cls.startsWith('enter-') || cls.startsWith('exit-')) {
-                        el.style.animationDuration = animationSpeedVal;
-                    }
-                });
-            });
+    // Применяем к реальному чату (вручную)
+    const realChatContainer = document.getElementById('realChatContainer');
+    if (realChatContainer) {
+        realChatContainer.style.background = `rgba(${hexToRgb(bgColorVal)}, ${bgOpacityVal})`;
+        realChatContainer.style.color = textColorVal;
+        realChatContainer.style.fontFamily = fontFamilyVal;
+        realChatContainer.style.fontWeight = fontWeightVal;
+        realChatContainer.style.lineHeight = lineHeightVal;
+        realChatContainer.style.borderRadius = borderRadiusVal;
+    }
 
-            // === ПРИМЕНЯЕМ К РЕАЛЬНОМУ ЧАТУ ===
-            document.documentElement.style.setProperty('--realchat-bg', bgColorVal);
-            document.documentElement.style.setProperty('--realchat-text', textColorVal);
-            document.documentElement.style.setProperty('--realchat-bg-opacity', bgOpacityVal);
-            document.documentElement.style.setProperty('--realchat-border-radius', borderRadiusVal);
-            document.documentElement.style.setProperty('--realchat-message-gap', messageGapVal);
-            document.documentElement.style.setProperty('--realchat-font-family', fontFamilyVal);
-            document.documentElement.style.setProperty('--realchat-font-weight', fontWeightVal);
-            document.documentElement.style.setProperty('--realchat-line-height', lineHeightVal);
-            document.documentElement.style.setProperty('--realchat-shadow', shadowVal);
-            document.documentElement.style.setProperty('--realchat-animation-speed', animationSpeedVal);
+    // Применяем к сообщениям в реальном чате
+    document.querySelectorAll('#realChatMessages .msg').forEach(el => {
+        el.style.borderRadius = borderRadiusVal;
+        el.style.marginBottom = messageGapVal;
+        el.style.boxShadow = shadowVal;
+        el.style.transition = `all ${animationSpeedVal} ease`;
+        el.style.fontFamily = fontFamilyVal;
+        el.style.fontWeight = fontWeightVal;
+        el.style.lineHeight = lineHeightVal;
+        el.style.color = textColorVal;
+    });
 
-            const realChatContainer = document.getElementById('realChatContainer');
-            if (realChatContainer) {
-                realChatContainer.style.background = `rgba(${hexToRgb(bgColorVal)}, ${bgOpacityVal})`;
-                realChatContainer.style.color = textColorVal;
-                realChatContainer.style.fontFamily = fontFamilyVal;
-                realChatContainer.style.fontWeight = fontWeightVal;
-                realChatContainer.style.lineHeight = lineHeightVal;
-                realChatContainer.style.borderRadius = borderRadiusVal;
-            }
-
-            document.querySelectorAll('#realChatMessages .msg').forEach(el => {
-                el.style.borderRadius = borderRadiusVal;
-                el.style.marginBottom = messageGapVal;
-                el.style.boxShadow = shadowVal;
-                el.style.transition = `all ${animationSpeedVal} ease`;
-                el.style.fontFamily = fontFamilyVal;
-                el.style.fontWeight = fontWeightVal;
-                el.style.lineHeight = lineHeightVal;
-                el.style.color = textColorVal;
-            });
-
-            document.querySelectorAll('#realChatMessages .msg').forEach(el => {
-                const classes = el.className.split(' ');
-                classes.forEach(cls => {
-                    if (cls.startsWith('enter-') || cls.startsWith('exit-')) {
-                        el.style.animationDuration = animationSpeedVal;
-                    }
-                });
-            });
-
-            console.log('✅ Стили применены');
-        }
+    console.log('✅ Стили применены ко всем контейнерам');
+}
 
         // ==========================================
         // ВСПОМОГАТЕЛЬНАЯ ФУНКЦИЯ (HEX → RGB)

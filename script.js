@@ -41,7 +41,7 @@ const LINE_HEIGHT = parseFloat(urlParams.get('lineHeight')) || 1.3;
 const ANIMATION_SPEED = parseInt(urlParams.get('animationSpeed')) || 300;
 
 // 🔥 ПРИМЕНЯЕМ НАСТРОЙКИ К CSS-ПЕРЕМЕННЫМ
-document.documentElement.style.setProperty('--chat-font-size', `${FONT_SIZE}px`);
+// 🔥 Применяем фон к веб-версии (chat.html)
 document.documentElement.style.setProperty('--chat-bg', `#${BG_COLOR}`);
 document.documentElement.style.setProperty('--chat-text', `#${TEXT_COLOR}`);
 document.documentElement.style.setProperty('--chat-bg-opacity', BG_OPACITY / 100);
@@ -51,6 +51,18 @@ document.documentElement.style.setProperty('--chat-font-family', FONT_FAMILY);
 document.documentElement.style.setProperty('--chat-font-weight', FONT_WEIGHT);
 document.documentElement.style.setProperty('--chat-line-height', LINE_HEIGHT);
 document.documentElement.style.setProperty('--chat-animation-speed', `${ANIMATION_SPEED}ms`);
+document.documentElement.style.setProperty('--chat-shadow', shadowMap[MESSAGE_SHADOW] || 'none');
+
+// 🔥 Применяем к #chat напрямую (для веб-версии)
+const chatElement = document.getElementById('chat');
+if (chatElement) {
+    chatElement.style.background = `rgba(${hexToRgb(BG_COLOR)}, ${BG_OPACITY / 100})`;
+    chatElement.style.color = `#${TEXT_COLOR}`;
+    chatElement.style.borderRadius = `${BORDER_RADIUS}px`;
+    chatElement.style.fontFamily = FONT_FAMILY;
+    chatElement.style.fontWeight = FONT_WEIGHT;
+    chatElement.style.lineHeight = LINE_HEIGHT;
+}
 
 // Настройка тени
 const shadowMap = {
@@ -768,45 +780,46 @@ function connectToTwitch() {
         setTimeout(sendCommands, 500);
     };
     
-    socket.onmessage = (event) => {
-        const raw = event.data;
+   socket.onmessage = (event) => {
+    const raw = event.data;
 
-        if (raw.startsWith('PING')) {
-            socket.send('PONG :tmi.twitch.tv');
-            console.log('🏓 PONG отправлен');
-            return;
-        }
+    if (raw.startsWith('PING')) {
+        socket.send('PONG :tmi.twitch.tv');
+        console.log('🏓 PONG отправлен');
+        return;
+    }
 
-        if (!raw.includes("PRIVMSG")) return;
-        
-        const userMatch = raw.match(/display-name=([^;]*)/);
-        const loginMatch = raw.match(/:(\w+)!/);
-        const user = userMatch?.[1] || loginMatch?.[1] || "unknown";
-        
-        const tmiTarget = `PRIVMSG #${TWITCH_CHANNEL} :`;
-        const index = raw.indexOf(tmiTarget);
-        if (index === -1) return;
-        
-        const text = raw.substring(index + tmiTarget.length).trim();
-        
-        const colorMatch = raw.match(/color=([^;]*)/);
-        const color = colorMatch?.[1] || randomColor();
-        
-        const badgesMatch = raw.match(/badges=([^;]*)/);
-        const badges = badgesMatch?.[1] || "";
-        
-        let twitchEmotesRaw = "";
-        const tags = raw.split(";");
-        for (let t of tags) {
-            if (t.startsWith("emotes=")) {
-                twitchEmotesRaw = t.split("=")[1] || "";
-                break;
-            }
+    if (!raw.includes("PRIVMSG")) return;
+    
+    const userMatch = raw.match(/display-name=([^;]*)/);
+    const loginMatch = raw.match(/:(\w+)!/);
+    const user = userMatch?.[1] || loginMatch?.[1] || "unknown";
+    
+    const tmiTarget = `PRIVMSG #${TWITCH_CHANNEL} :`;
+    const index = raw.indexOf(tmiTarget);
+    if (index === -1) return;
+    
+    const text = raw.substring(index + tmiTarget.length).trim();
+    
+    // 🔥 ЦВЕТ НИКА ИЗ TWITCH
+    const colorMatch = raw.match(/color=([^;]*)/);
+    const color = colorMatch?.[1] || randomColor();
+    
+    const badgesMatch = raw.match(/badges=([^;]*)/);
+    const badges = badgesMatch?.[1] || "";
+    
+    let twitchEmotesRaw = "";
+    const tags = raw.split(";");
+    for (let t of tags) {
+        if (t.startsWith("emotes=")) {
+            twitchEmotesRaw = t.split("=")[1] || "";
+            break;
         }
-        
-        const finalHTML = parseAllEmotes(text, twitchEmotesRaw);
-        addMessageWithHTML(user, finalHTML, color, badges);
-    };
+    }
+    
+    const finalHTML = parseAllEmotes(text, twitchEmotesRaw);
+    addMessageWithHTML(user, finalHTML, color, badges);
+};
     
     socket.onerror = (err) => {
         console.error("WS error:", err);
