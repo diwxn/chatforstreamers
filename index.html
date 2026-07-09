@@ -3066,6 +3066,7 @@ let realChatReconnectAttempts = 0;
 let realChatMaxReconnectAttempts = 5;
 let isRemovingMessages = false;
 let pendingMessages = [];
+let isRealChatConnecting = false; // 🔥 Флаг для предотвращения множественных подключений
 
 const toggleBtn = document.getElementById('toggleChatBtn');
 const realChatContainer = document.getElementById('realChatContainer');
@@ -3098,6 +3099,12 @@ function applySettingsToRealChat() {
 // ПОДКЛЮЧЕНИЕ К РЕАЛЬНОМУ ЧАТУ (ИСПРАВЛЕННОЕ)
 // ==========================================
 function connectRealChat() {
+    // 🔥 Предотвращаем множественные подключения
+    if (isRealChatConnecting) {
+        console.log('⚠️ Уже выполняется подключение, пропускаем');
+        return;
+    }
+    
     const channel = channelInput.value.trim() || '1diwan';
 
     if (realChatReconnectAttempts >= realChatMaxReconnectAttempts) {
@@ -3114,7 +3121,7 @@ function connectRealChat() {
         realChatSocket = null;
     }
 
-    // 🔥 ОБЪЯВЛЯЕМ socket ЗДЕСЬ (в замыкании)
+    isRealChatConnecting = true;
     let socket;
 
     setTimeout(() => {
@@ -3125,6 +3132,7 @@ function connectRealChat() {
             console.error('❌ Ошибка создания WebSocket:', e);
             realChatStatus.textContent = '❌ Ошибка создания соединения';
             realChatStatus.style.color = '#ef5350';
+            isRealChatConnecting = false;
             return;
         }
 
@@ -3137,6 +3145,7 @@ function connectRealChat() {
                     realChatSocket.close();
                 } catch (e) {}
                 realChatSocket = null;
+                isRealChatConnecting = false;
                 scheduleReconnect();
             }
         }, 5000);
@@ -3147,8 +3156,8 @@ function connectRealChat() {
             realChatStatus.textContent = 'Подключено ✅';
             realChatStatus.style.color = '#4caf50';
             realChatReconnectAttempts = 0;
+            isRealChatConnecting = false;
 
-            // 🔥 ТЕПЕРЬ socket ДОСТУПЕН
             socket.send("CAP REQ :twitch.tv/tags");
             socket.send("CAP REQ :twitch.tv/commands");
             socket.send("CAP REQ :twitch.tv/membership");
@@ -3207,11 +3216,13 @@ function connectRealChat() {
             if (event.code === 1000) {
                 realChatStatus.textContent = 'Отключено';
                 realChatStatus.style.color = '#888';
+                isRealChatConnecting = false;
                 return;
             }
 
             if (!event.wasClean && isRealChatMode) {
                 realChatReconnectAttempts++;
+                isRealChatConnecting = false;
                 scheduleReconnect();
             }
         };
@@ -3221,6 +3232,7 @@ function connectRealChat() {
             console.error('📺 Ошибка реального чата:', err);
             realChatStatus.textContent = '⚠️ Ошибка';
             realChatStatus.style.color = '#ffa726';
+            isRealChatConnecting = false;
         };
     }, 500);
 }
@@ -3456,6 +3468,7 @@ toggleBtn.addEventListener('click', () => {
 
         applySettingsToRealChat();
         realChatReconnectAttempts = 0;
+        isRealChatConnecting = false;
         connectRealChat();
 
         realChatMessages.innerHTML = '';
