@@ -2887,7 +2887,10 @@ animationSpeed.addEventListener('input', () => {
         // ==========================================
 // ПРИМЕНЕНИЕ НАСТРОЕК ВНЕШНЕГО ВИДА К ПРЕВЬЮ
 // ==========================================
-function applyAppearanceToPreview() {
+// ==========================================
+// ПРИМЕНЕНИЕ НАСТРОЕК ВНЕШНЕГО ВИДА К РЕАЛЬНОМУ ЧАТУ
+// ==========================================
+function applyAppearanceToRealChat() {
     const bgColorVal = bgColor.value;
     const textColorVal = textColor.value;
     const bgOpacityVal = bgOpacity.value / 100;
@@ -2906,27 +2909,31 @@ function applyAppearanceToPreview() {
     };
     const shadowVal = shadowMap[messageShadow.value] || 'none';
 
-    // Применяем к превью
-    const previewChat = document.getElementById('previewChat');
-    if (previewChat) {
-        previewChat.style.background = `rgba(${hexToRgb(bgColorVal)}, ${bgOpacityVal})`;
-        previewChat.style.color = textColorVal;
-        previewChat.style.fontFamily = fontFamilyVal;
-        previewChat.style.fontWeight = fontWeightVal;
-        previewChat.style.lineHeight = lineHeightVal;
-        previewChat.style.borderRadius = borderRadiusVal;
+    // Применяем к контейнеру реального чата
+    const realChatContainer = document.getElementById('realChatContainer');
+    if (realChatContainer) {
+        realChatContainer.style.background = `rgba(${hexToRgb(bgColorVal)}, ${bgOpacityVal})`;
+        realChatContainer.style.color = textColorVal;
+        realChatContainer.style.fontFamily = fontFamilyVal;
+        realChatContainer.style.fontWeight = fontWeightVal;
+        realChatContainer.style.lineHeight = lineHeightVal;
+        realChatContainer.style.borderRadius = borderRadiusVal;
     }
 
-    // Применяем к каждому сообщению в превью
-    document.querySelectorAll('.preview-chat .msg').forEach(el => {
+    // Применяем к каждому сообщению в реальном чате
+    document.querySelectorAll('#realChatMessages .msg').forEach(el => {
         el.style.borderRadius = borderRadiusVal;
         el.style.marginBottom = messageGapVal;
         el.style.boxShadow = shadowVal;
         el.style.transition = `all ${animationSpeedVal} ease`;
+        el.style.fontFamily = fontFamilyVal;
+        el.style.fontWeight = fontWeightVal;
+        el.style.lineHeight = lineHeightVal;
+        el.style.color = textColorVal;
     });
 
-    // Обновляем анимации
-    document.querySelectorAll('.preview-chat .msg').forEach(el => {
+    // Обновляем анимации для реального чата
+    document.querySelectorAll('#realChatMessages .msg').forEach(el => {
         const classes = el.className.split(' ');
         classes.forEach(cls => {
             if (cls.startsWith('enter-') || cls.startsWith('exit-')) {
