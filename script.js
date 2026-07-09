@@ -40,10 +40,8 @@ const FONT_WEIGHT = parseInt(urlParams.get('fontWeight')) || 400;
 const LINE_HEIGHT = parseFloat(urlParams.get('lineHeight')) || 1.3;
 const ANIMATION_SPEED = parseInt(urlParams.get('animationSpeed')) || 300;
 
-// Применяем размер шрифта к чату через CSS-переменную
+// 🔥 ПРИМЕНЯЕМ НАСТРОЙКИ К CSS-ПЕРЕМЕННЫМ
 document.documentElement.style.setProperty('--chat-font-size', `${FONT_SIZE}px`);
-
-// Применяем настройки внешнего вида к CSS
 document.documentElement.style.setProperty('--chat-bg', `#${BG_COLOR}`);
 document.documentElement.style.setProperty('--chat-text', `#${TEXT_COLOR}`);
 document.documentElement.style.setProperty('--chat-bg-opacity', BG_OPACITY / 100);
@@ -66,8 +64,10 @@ document.documentElement.style.setProperty('--chat-shadow', shadowMap[MESSAGE_SH
 console.log('✅ Настройки применены:', {
     bgColor: BG_COLOR,
     textColor: TEXT_COLOR,
+    borderRadius: BORDER_RADIUS,
     fontFamily: FONT_FAMILY,
-    fontWeight: FONT_WEIGHT
+    fontWeight: FONT_WEIGHT,
+    animationSpeed: ANIMATION_SPEED
 });
 
 // ==========================================
