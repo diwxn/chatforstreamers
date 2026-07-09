@@ -54,6 +54,7 @@ document.documentElement.style.setProperty('--chat-animation-speed', `${ANIMATIO
 document.documentElement.style.setProperty('--chat-shadow', shadowMap[MESSAGE_SHADOW] || 'none');
 
 // 🔥 Применяем к #chat напрямую (для веб-версии)
+// 🔥 ПРЯМОЕ ПРИМЕНЕНИЕ К ВЕБ-ВЕРСИИ (chat.html)
 const chatElement = document.getElementById('chat');
 if (chatElement) {
     chatElement.style.background = `rgba(${hexToRgb(BG_COLOR)}, ${BG_OPACITY / 100})`;
@@ -63,6 +64,8 @@ if (chatElement) {
     chatElement.style.fontWeight = FONT_WEIGHT;
     chatElement.style.lineHeight = LINE_HEIGHT;
 }
+
+console.log('✅ Фон применён к веб-версии');
 
 // Настройка тени
 const shadowMap = {
@@ -104,6 +107,11 @@ const stats = {
     raids: 0,
     sessionStart: Date.now()
 };
+
+function hexToRgb(hex) {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : '14, 14, 16';
+}
 
 // Загружаем статистику из localStorage
 function loadStatsFromStorage() {
