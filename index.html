@@ -1443,6 +1443,115 @@
                             </div>
                         </div>
                     </div>
+                    <div style="margin-top:12px; padding-top:12px; border-top:2px solid var(--border-color);">
+    <div style="font-size:11px; font-weight:600; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">
+        🎨 Внешний вид
+    </div>
+    
+    <!-- Цвет фона чата -->
+    <div class="form-group">
+        <label for="bgColor">Цвет фона чата</label>
+        <div class="input-wrapper">
+            <input type="color" id="bgColor" value="#0e0e10">
+            <span class="range-value" id="bgColorValue">#0e0e10</span>
+        </div>
+    </div>
+    
+    <!-- Цвет текста -->
+    <div class="form-group">
+        <label for="textColor">Цвет текста</label>
+        <div class="input-wrapper">
+            <input type="color" id="textColor" value="#efeff1">
+            <span class="range-value" id="textColorValue">#efeff1</span>
+        </div>
+    </div>
+    
+    <!-- Прозрачность фона -->
+    <div class="form-group">
+        <label for="bgOpacity">Прозрачность фона</label>
+        <div class="input-wrapper">
+            <input type="range" id="bgOpacity" min="0" max="100" value="100" step="1">
+            <span class="range-value" id="bgOpacityValue">100%</span>
+        </div>
+    </div>
+    
+    <!-- Скругление уголков -->
+    <div class="form-group">
+        <label for="borderRadius">Скругление уголков</label>
+        <div class="input-wrapper">
+            <input type="range" id="borderRadius" min="0" max="20" value="8" step="1">
+            <span class="range-value" id="borderRadiusValue">8px</span>
+        </div>
+    </div>
+    
+    <!-- Отступы между сообщениями -->
+    <div class="form-group">
+        <label for="messageGap">Отступы между сообщениями</label>
+        <div class="input-wrapper">
+            <input type="range" id="messageGap" min="0" max="20" value="4" step="1">
+            <span class="range-value" id="messageGapValue">4px</span>
+        </div>
+    </div>
+    
+    <!-- Тень сообщений -->
+    <div class="form-group">
+        <label for="messageShadow">Тень сообщений</label>
+        <div class="input-wrapper">
+            <select id="messageShadow" class="settings-select">
+                <option value="none">Нет</option>
+                <option value="light" selected>Лёгкая</option>
+                <option value="medium">Средняя</option>
+                <option value="heavy">Сильная</option>
+            </select>
+        </div>
+    </div>
+    
+    <!-- Шрифт -->
+    <div class="form-group">
+        <label for="fontFamily">Шрифт</label>
+        <div class="input-wrapper">
+            <select id="fontFamily" class="settings-select">
+                <option value="Segoe UI, system-ui, sans-serif">Segoe UI</option>
+                <option value="Roboto, sans-serif">Roboto</option>
+                <option value="Montserrat, sans-serif">Montserrat</option>
+                <option value="Courier New, monospace">Courier New</option>
+                <option value="Arial, sans-serif">Arial</option>
+                <option value="Georgia, serif">Georgia</option>
+            </select>
+        </div>
+    </div>
+    
+    <!-- Жирность текста -->
+    <div class="form-group">
+        <label for="fontWeight">Жирность текста</label>
+        <div class="input-wrapper">
+            <select id="fontWeight" class="settings-select">
+                <option value="300">Светлый (300)</option>
+                <option value="400" selected>Обычный (400)</option>
+                <option value="600">Полужирный (600)</option>
+                <option value="700">Жирный (700)</option>
+            </select>
+        </div>
+    </div>
+    
+    <!-- Межстрочный интервал -->
+    <div class="form-group">
+        <label for="lineHeight">Межстрочный интервал</label>
+        <div class="input-wrapper">
+            <input type="range" id="lineHeight" min="1" max="2" value="1.3" step="0.1">
+            <span class="range-value" id="lineHeightValue">1.3</span>
+        </div>
+    </div>
+    
+    <!-- Скорость анимации -->
+    <div class="form-group">
+        <label for="animationSpeed">Скорость анимации</label>
+        <div class="input-wrapper">
+            <input type="range" id="animationSpeed" min="100" max="1000" value="300" step="50">
+            <span class="range-value" id="animationSpeedValue">300ms</span>
+        </div>
+    </div>
+</div>
                 </div>
             </div>
 
@@ -1575,6 +1684,26 @@
         const showAnimations = document.getElementById('showAnimations');
         const enterAnimation = document.getElementById('enterAnimation');
         const exitAnimation = document.getElementById('exitAnimation');
+        // ==========================================
+// НОВЫЕ НАСТРОЙКИ ВНЕШНЕГО ВИДА
+// ==========================================
+const bgColor = document.getElementById('bgColor');
+const bgColorValue = document.getElementById('bgColorValue');
+const textColor = document.getElementById('textColor');
+const textColorValue = document.getElementById('textColorValue');
+const bgOpacity = document.getElementById('bgOpacity');
+const bgOpacityValue = document.getElementById('bgOpacityValue');
+const borderRadius = document.getElementById('borderRadius');
+const borderRadiusValue = document.getElementById('borderRadiusValue');
+const messageGap = document.getElementById('messageGap');
+const messageGapValue = document.getElementById('messageGapValue');
+const messageShadow = document.getElementById('messageShadow');
+const fontFamily = document.getElementById('fontFamily');
+const fontWeight = document.getElementById('fontWeight');
+const lineHeight = document.getElementById('lineHeight');
+const lineHeightValue = document.getElementById('lineHeightValue');
+const animationSpeed = document.getElementById('animationSpeed');
+const animationSpeedValue = document.getElementById('animationSpeedValue');
 
         // ==========================================
         // ПЕРЕМЕННЫЕ ДЛЯ ПРЕВЬЮ
@@ -2339,33 +2468,56 @@
         // ==========================================
         // ГЕНЕРАЦИЯ ССЫЛКИ
         // ==========================================
-        function generateUrl() {
-            const channel = channelInput.value.trim() || '1diwan';
-            const twitchId = twitchIdInput.value || '';
-            const fontSizeVal = fontSize.value;
-            const hideTimeVal = hideTime.value;
-            const maxMessagesVal = maxMessages.value;
-            const showTimeVal = showTime.checked;
-            const enterAnim = enterAnimation ? enterAnimation.value : 'slideUp';
-            const exitAnim = exitAnimation ? exitAnimation.value : 'slideOut';
+       function generateUrl() {
+    const channel = channelInput.value.trim() || '1diwan';
+    const twitchId = twitchIdInput.value || '';
+    const fontSizeVal = fontSize.value;
+    const hideTimeVal = hideTime.value;
+    const maxMessagesVal = maxMessages.value;
+    const showTimeVal = showTime.checked;
+    const enterAnim = enterAnimation ? enterAnimation.value : 'slideUp';
+    const exitAnim = exitAnimation ? exitAnimation.value : 'slideOut';
+    
+    // НОВЫЕ ПАРАМЕТРЫ
+    const bgColorVal = bgColor.value.replace('#', '');
+    const textColorVal = textColor.value.replace('#', '');
+    const bgOpacityVal = bgOpacity.value;
+    const borderRadiusVal = borderRadius.value;
+    const messageGapVal = messageGap.value;
+    const messageShadowVal = messageShadow.value;
+    const fontFamilyVal = encodeURIComponent(fontFamily.value);
+    const fontWeightVal = fontWeight.value;
+    const lineHeightVal = lineHeight.value;
+    const animationSpeedVal = animationSpeed.value;
 
-            const currentPath = window.location.pathname;
-            const basePath = window.location.origin + currentPath.replace(/[^/]*$/, '') + 'chat.html';
+    const currentPath = window.location.pathname;
+    const basePath = window.location.origin + currentPath.replace(/[^/]*$/, '') + 'chat.html';
 
-            let url = `${basePath}?channel=${encodeURIComponent(channel)}`;
+    let url = `${basePath}?channel=${encodeURIComponent(channel)}`;
+    
+    if (twitchId) {
+        url += `&twitchId=${encodeURIComponent(twitchId)}`;
+    }
+    
+    url += `&fontSize=${fontSizeVal}&hideTime=${hideTimeVal}&maxMessages=${maxMessagesVal}`;
+    if (!showTimeVal) url += '&showTime=false';
+    url += `&enterAnim=${enterAnim}&exitAnim=${exitAnim}`;
+    
+    // НОВЫЕ ПАРАМЕТРЫ В URL
+    url += `&bgColor=${bgColorVal}`;
+    url += `&textColor=${textColorVal}`;
+    url += `&bgOpacity=${bgOpacityVal}`;
+    url += `&borderRadius=${borderRadiusVal}`;
+    url += `&messageGap=${messageGapVal}`;
+    url += `&messageShadow=${messageShadowVal}`;
+    url += `&fontFamily=${fontFamilyVal}`;
+    url += `&fontWeight=${fontWeightVal}`;
+    url += `&lineHeight=${lineHeightVal}`;
+    url += `&animationSpeed=${animationSpeedVal}`;
 
-            if (twitchId) {
-                url += `&twitchId=${encodeURIComponent(twitchId)}`;
-            }
-
-            url += `&fontSize=${fontSizeVal}&hideTime=${hideTimeVal}&maxMessages=${maxMessagesVal}`;
-            if (!showTimeVal) url += '&showTime=false';
-            url += `&enterAnim=${enterAnim}&exitAnim=${exitAnim}`;
-
-            outputUrl.textContent = url;
-            previewChannel.textContent = `#${channel}`;
-        }
-
+    outputUrl.textContent = url;
+    previewChannel.textContent = `#${channel}`;
+}
         // ==========================================
         // ПОИСК ПОЛЬЗОВАТЕЛЯ
         // ==========================================
@@ -2579,7 +2731,66 @@
             restartPreview();
             if (isRealChatMode) applySettingsToRealChat();
         });
+// ==========================================
+// ОБРАБОТЧИКИ ДЛЯ НОВЫХ НАСТРОЕК ВНЕШНЕГО ВИДА
+// ==========================================
 
+bgColor.addEventListener('input', () => {
+    bgColorValue.textContent = bgColor.value;
+    generateUrl();
+    applyAppearanceToPreview();
+});
+
+textColor.addEventListener('input', () => {
+    textColorValue.textContent = textColor.value;
+    generateUrl();
+    applyAppearanceToPreview();
+});
+
+bgOpacity.addEventListener('input', () => {
+    bgOpacityValue.textContent = `${bgOpacity.value}%`;
+    generateUrl();
+    applyAppearanceToPreview();
+});
+
+borderRadius.addEventListener('input', () => {
+    borderRadiusValue.textContent = `${borderRadius.value}px`;
+    generateUrl();
+    applyAppearanceToPreview();
+});
+
+messageGap.addEventListener('input', () => {
+    messageGapValue.textContent = `${messageGap.value}px`;
+    generateUrl();
+    applyAppearanceToPreview();
+});
+
+messageShadow.addEventListener('change', () => {
+    generateUrl();
+    applyAppearanceToPreview();
+});
+
+fontFamily.addEventListener('change', () => {
+    generateUrl();
+    applyAppearanceToPreview();
+});
+
+fontWeight.addEventListener('change', () => {
+    generateUrl();
+    applyAppearanceToPreview();
+});
+
+lineHeight.addEventListener('input', () => {
+    lineHeightValue.textContent = lineHeight.value;
+    generateUrl();
+    applyAppearanceToPreview();
+});
+
+animationSpeed.addEventListener('input', () => {
+    animationSpeedValue.textContent = `${animationSpeed.value}ms`;
+    generateUrl();
+    applyAppearanceToPreview();
+});
         // ==========================================
         // КОПИРОВАНИЕ
         // ==========================================
@@ -2628,6 +2839,11 @@
             setTimeout(() => {
                 startPreview();
             }, 500);
+
+            setTimeout(() => {
+    applyAppearanceToPreview();
+}, 100);
+
         }
 
         init();
@@ -2667,6 +2883,66 @@
                 lastStatsTime = Date.now();
             }
         };
+
+        // ==========================================
+// ПРИМЕНЕНИЕ НАСТРОЕК ВНЕШНЕГО ВИДА К ПРЕВЬЮ
+// ==========================================
+function applyAppearanceToPreview() {
+    const bgColorVal = bgColor.value;
+    const textColorVal = textColor.value;
+    const bgOpacityVal = bgOpacity.value / 100;
+    const borderRadiusVal = `${borderRadius.value}px`;
+    const messageGapVal = `${messageGap.value}px`;
+    const fontFamilyVal = fontFamily.value;
+    const fontWeightVal = fontWeight.value;
+    const lineHeightVal = lineHeight.value;
+    const animationSpeedVal = `${animationSpeed.value}ms`;
+
+    const shadowMap = {
+        'none': 'none',
+        'light': '0 2px 8px rgba(0,0,0,0.15)',
+        'medium': '0 4px 16px rgba(0,0,0,0.3)',
+        'heavy': '0 8px 32px rgba(0,0,0,0.5)'
+    };
+    const shadowVal = shadowMap[messageShadow.value] || 'none';
+
+    // Применяем к превью
+    const previewChat = document.getElementById('previewChat');
+    if (previewChat) {
+        previewChat.style.background = `rgba(${hexToRgb(bgColorVal)}, ${bgOpacityVal})`;
+        previewChat.style.color = textColorVal;
+        previewChat.style.fontFamily = fontFamilyVal;
+        previewChat.style.fontWeight = fontWeightVal;
+        previewChat.style.lineHeight = lineHeightVal;
+        previewChat.style.borderRadius = borderRadiusVal;
+    }
+
+    // Применяем к каждому сообщению в превью
+    document.querySelectorAll('.preview-chat .msg').forEach(el => {
+        el.style.borderRadius = borderRadiusVal;
+        el.style.marginBottom = messageGapVal;
+        el.style.boxShadow = shadowVal;
+        el.style.transition = `all ${animationSpeedVal} ease`;
+    });
+
+    // Обновляем анимации
+    document.querySelectorAll('.preview-chat .msg').forEach(el => {
+        const classes = el.className.split(' ');
+        classes.forEach(cls => {
+            if (cls.startsWith('enter-') || cls.startsWith('exit-')) {
+                el.style.animationDuration = animationSpeedVal;
+            }
+        });
+    });
+}
+
+// ==========================================
+// ВСПОМОГАТЕЛЬНАЯ ФУНКЦИЯ (HEX → RGB)
+// ==========================================
+function hexToRgb(hex) {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : '14, 14, 16';
+}
 
         async function checkChannelStatus() {
             const channel = channelInput.value.trim() || '1diwan';

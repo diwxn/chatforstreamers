@@ -50,6 +50,46 @@ html, body {
     flex-shrink: 0;
 }
 
+:root {
+    --chat-bg: #0e0e10;
+    --chat-text: #efeff1;
+    --chat-bg-opacity: 1;
+    --chat-border-radius: 8px;
+    --chat-message-gap: 4px;
+    --chat-font-family: 'Segoe UI', system-ui, sans-serif;
+    --chat-font-weight: 400;
+    --chat-line-height: 1.3;
+    --chat-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    --chat-animation-speed: 300ms;
+}
+
+#chat {
+    background: rgba(14, 14, 16, var(--chat-bg-opacity));
+    color: var(--chat-text);
+    border-radius: var(--chat-border-radius);
+    font-family: var(--chat-font-family);
+    font-weight: var(--chat-font-weight);
+    line-height: var(--chat-line-height);
+}
+
+.message {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 4px 10px;
+    border-radius: var(--chat-border-radius);
+    margin-bottom: var(--chat-message-gap);
+    box-shadow: var(--chat-shadow);
+    transition: all var(--chat-animation-speed) ease;
+}
+
+/* Анимации с учётом скорости */
+.enter-slideUp {
+    animation: enterSlideUp var(--chat-animation-speed) ease-out forwards;
+}
+.enter-slideLeft {
+    animation: enterSlideLeft var(--chat-animation-speed) ease-out forwards;
+}
+/* и так для остальных анимаций... */
+
 /* ==========================================
    ВСЕ СМАЙЛИКИ (ОБЩИЙ РАЗМЕР)
    ========================================== */
