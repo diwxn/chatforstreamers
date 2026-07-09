@@ -721,8 +721,11 @@ function connectToTwitch() {
     }
     socket = new WebSocket("wss://irc-ws.chat.twitch.tv:443");
     socket.onopen = () => {
-        console.log(`Connected to Twitch chat: #${TWITCH_CHANNEL}`);
-        reconnectAttempts = 0;
+    console.log(`Connected to Twitch chat: #${TWITCH_CHANNEL}`);
+    reconnectAttempts = 0;
+
+    // Отправляем команды с задержкой
+    const sendCommands = () => {
         socket.send("CAP REQ :twitch.tv/tags");
         socket.send("CAP REQ :twitch.tv/commands");
         socket.send("CAP REQ :twitch.tv/membership");
@@ -730,8 +733,23 @@ function connectToTwitch() {
         socket.send("NICK justinfan" + Math.floor(10000 + Math.random() * 90000));
         socket.send(`JOIN #${TWITCH_CHANNEL}`);
     };
+
+    // Задержка 500ms перед отправкой
+    setTimeout(sendCommands, 500);
+};
     
     socket.onmessage = (event) => {
+            const raw = event.data;
+
+    // 🔥 ОБРАБОТКА PING
+    if (raw.startsWith('PING')) {
+        socket.send('PONG :tmi.twitch.tv');
+        console.log('🏓 PONG отправлен');
+        return;
+    }
+
+    if (!raw.includes("PRIVMSG")) return;
+    
         const raw = event.data;
         if (!raw.includes("PRIVMSG")) return;
         
