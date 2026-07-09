@@ -7,8 +7,8 @@ const urlParams = new URLSearchParams(window.location.search);
 // API URL (ДЛЯ РАЗНЫХ СРЕД)
 // ==========================================
 const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    ? 'http://localhost:3000'  // Локальная разработка
-    : 'https://194-67-121-79.nip.io'; // Твой VPS сервер
+    ? 'http://localhost:3000'
+    : 'https://194-67-121-79.nip.io';
 
 console.log(`🌐 API URL: ${API_URL}`);
 
@@ -28,9 +28,51 @@ const MAX_MESSAGES = parseInt(urlParams.get('maxMessages')) || 10;
 const ENTER_ANIM = urlParams.get('enterAnim') || 'slideUp';
 const EXIT_ANIM = urlParams.get('exitAnim') || 'slideOut';
 
+// 🔥 НОВЫЕ ПАРАМЕТРЫ ВНЕШНЕГО ВИДА
+const BG_COLOR = urlParams.get('bgColor') || '0e0e10';
+const TEXT_COLOR = urlParams.get('textColor') || 'efeff1';
+const BG_OPACITY = parseInt(urlParams.get('bgOpacity')) || 100;
+const BORDER_RADIUS = parseInt(urlParams.get('borderRadius')) || 8;
+const MESSAGE_GAP = parseInt(urlParams.get('messageGap')) || 4;
+const MESSAGE_SHADOW = urlParams.get('messageShadow') || 'light';
+const FONT_FAMILY = decodeURIComponent(urlParams.get('fontFamily') || 'Segoe UI, system-ui, sans-serif');
+const FONT_WEIGHT = parseInt(urlParams.get('fontWeight')) || 400;
+const LINE_HEIGHT = parseFloat(urlParams.get('lineHeight')) || 1.3;
+const ANIMATION_SPEED = parseInt(urlParams.get('animationSpeed')) || 300;
+
 // Применяем размер шрифта к чату через CSS-переменную
 document.documentElement.style.setProperty('--chat-font-size', `${FONT_SIZE}px`);
 
+// Применяем настройки внешнего вида к CSS
+document.documentElement.style.setProperty('--chat-bg', `#${BG_COLOR}`);
+document.documentElement.style.setProperty('--chat-text', `#${TEXT_COLOR}`);
+document.documentElement.style.setProperty('--chat-bg-opacity', BG_OPACITY / 100);
+document.documentElement.style.setProperty('--chat-border-radius', `${BORDER_RADIUS}px`);
+document.documentElement.style.setProperty('--chat-message-gap', `${MESSAGE_GAP}px`);
+document.documentElement.style.setProperty('--chat-font-family', FONT_FAMILY);
+document.documentElement.style.setProperty('--chat-font-weight', FONT_WEIGHT);
+document.documentElement.style.setProperty('--chat-line-height', LINE_HEIGHT);
+document.documentElement.style.setProperty('--chat-animation-speed', `${ANIMATION_SPEED}ms`);
+
+// Настройка тени
+const shadowMap = {
+    'none': 'none',
+    'light': '0 2px 8px rgba(0,0,0,0.15)',
+    'medium': '0 4px 16px rgba(0,0,0,0.3)',
+    'heavy': '0 8px 32px rgba(0,0,0,0.5)'
+};
+document.documentElement.style.setProperty('--chat-shadow', shadowMap[MESSAGE_SHADOW] || 'none');
+
+console.log('✅ Настройки применены:', {
+    bgColor: BG_COLOR,
+    textColor: TEXT_COLOR,
+    fontFamily: FONT_FAMILY,
+    fontWeight: FONT_WEIGHT
+});
+
+// ==========================================
+// ОСТАЛЬНОЙ КОД (без изменений)
+// ==========================================
 const emoteCache = new Map();
 
 let reconnectAttempts = 0;
@@ -124,7 +166,6 @@ function updateStatsDisplay() {
     }
     if (statTopChatter) statTopChatter.textContent = topUser !== '—' ? `${topUser} (${topCount})` : '—';
     
-    // Отправляем в панель и сохраняем
     sendStatsToPanel();
     saveStatsToStorage();
 }
@@ -194,7 +235,6 @@ function getTopChatter() {
     return topUser !== '—' ? `${topUser} (${topCount})` : '—';
 }
 
-// Единый обработчик сообщений из панели
 statsChannel.onmessage = (event) => {
     if (event.data && event.data.type === 'request_stats') {
         console.log('📤 Принудительная отправка статистики по запросу');
@@ -207,13 +247,11 @@ statsChannel.onmessage = (event) => {
     }
 };
 
-// Отправляем начальное состояние
 setTimeout(() => {
     sendStatsToPanel();
     console.log('📤 Начальная статистика отправлена');
 }, 100);
 
-// Обновляем статистику при переключении на вкладку
 document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
         console.log('👁️ Вкладка активна, обновляем статистику');
@@ -232,13 +270,11 @@ async function checkChannelStatus() {
     if (!channel) return;
     
     try {
-        // Используем decapi.me как основной метод (не требует API ключей)
         const response = await fetch(`https://decapi.me/twitch/uptime/${channel}`);
         if (response.ok) {
             const uptime = await response.text();
             isChannelLive = !uptime.toLowerCase().includes('is offline') && uptime.trim() !== '';
         } else {
-            // Fallback: другой сервис
             const altResponse = await fetch(`https://api.gempir.com/stream/${channel}`);
             if (altResponse.ok) {
                 const data = await altResponse.json();
@@ -642,7 +678,6 @@ function processQueue() {
     const safeUser = escapeHTML(user);
     const timeHTML = SHOW_TIME ? `<span class="time">[${getCurrentTime()}]</span>` : '';
     
-    // 🔥 Добавляем иконку для первого сообщения
     let activityIcon = '';
     if (activity.type === 'first-message') {
         activityIcon = '<span class="first-icon">🌸</span>';
@@ -693,15 +728,12 @@ const IS_CHAT_PAGE = window.location.pathname.includes('chat.html');
 
 if (!IS_CHAT_PAGE) {
     console.log('ℹ️ Это страница панели управления. Подключение к Twitch не запускается.');
-    // Всё остальное (статистика, настройки) работает, но чат не подключается
 } else {
     console.log('✅ Это страница чата. Запускаем подключение к Twitch.');
-    // Запускаем весь код, который подключается к Twitch
-    // Можно оставить как есть, или обернуть в функцию startChat()
 }
 
 // ==========================================
-// ПОДКЛЮЧЕНИЕ К TWITCH
+// ПОДКЛЮЧЕНИЕ К TWITCH (ИСПРАВЛЕННОЕ)
 // ==========================================
 function connectToTwitch() {
     if (socket?.readyState === WebSocket.OPEN || socket?.readyState === WebSocket.CONNECTING) {
@@ -721,35 +753,30 @@ function connectToTwitch() {
     }
     socket = new WebSocket("wss://irc-ws.chat.twitch.tv:443");
     socket.onopen = () => {
-    console.log(`Connected to Twitch chat: #${TWITCH_CHANNEL}`);
-    reconnectAttempts = 0;
+        console.log(`Connected to Twitch chat: #${TWITCH_CHANNEL}`);
+        reconnectAttempts = 0;
 
-    // Отправляем команды с задержкой
-    const sendCommands = () => {
-        socket.send("CAP REQ :twitch.tv/tags");
-        socket.send("CAP REQ :twitch.tv/commands");
-        socket.send("CAP REQ :twitch.tv/membership");
-        socket.send("PASS SCHMOOPIIE");
-        socket.send("NICK justinfan" + Math.floor(10000 + Math.random() * 90000));
-        socket.send(`JOIN #${TWITCH_CHANNEL}`);
+        const sendCommands = () => {
+            socket.send("CAP REQ :twitch.tv/tags");
+            socket.send("CAP REQ :twitch.tv/commands");
+            socket.send("CAP REQ :twitch.tv/membership");
+            socket.send("PASS SCHMOOPIIE");
+            socket.send("NICK justinfan" + Math.floor(10000 + Math.random() * 90000));
+            socket.send(`JOIN #${TWITCH_CHANNEL}`);
+        };
+
+        setTimeout(sendCommands, 500);
     };
-
-    // Задержка 500ms перед отправкой
-    setTimeout(sendCommands, 500);
-};
     
     socket.onmessage = (event) => {
-    const message = event.data; // ← Используй другое имя
-
-    if (message.startsWith('PING')) {
-        socket.send('PONG :tmi.twitch.tv');
-        console.log('🏓 PONG отправлен');
-        return;
-    }
-
-    if (!message.includes("PRIVMSG")) return;
-    
         const raw = event.data;
+
+        if (raw.startsWith('PING')) {
+            socket.send('PONG :tmi.twitch.tv');
+            console.log('🏓 PONG отправлен');
+            return;
+        }
+
         if (!raw.includes("PRIVMSG")) return;
         
         const userMatch = raw.match(/display-name=([^;]*)/);
@@ -762,7 +789,6 @@ function connectToTwitch() {
         
         const text = raw.substring(index + tmiTarget.length).trim();
         
-        // 🔥 ЦВЕТ: если не указан — используем случайный
         const colorMatch = raw.match(/color=([^;]*)/);
         const color = colorMatch?.[1] || randomColor();
         
