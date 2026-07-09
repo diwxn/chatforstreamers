@@ -739,16 +739,15 @@ function connectToTwitch() {
 };
     
     socket.onmessage = (event) => {
-            const raw = event.data;
+    const message = event.data; // ← Используй другое имя
 
-    // 🔥 ОБРАБОТКА PING
-    if (raw.startsWith('PING')) {
+    if (message.startsWith('PING')) {
         socket.send('PONG :tmi.twitch.tv');
         console.log('🏓 PONG отправлен');
         return;
     }
 
-    if (!raw.includes("PRIVMSG")) return;
+    if (!message.includes("PRIVMSG")) return;
     
         const raw = event.data;
         if (!raw.includes("PRIVMSG")) return;
