@@ -3016,45 +3016,57 @@
         removeNext();
     }
 
-    toggleBtn.addEventListener('click', () => {
-        isRealChatMode = !isRealChatMode;
+toggleBtn.addEventListener('click', () => {
+    isRealChatMode = !isRealChatMode;
+    
+    // 🔥 ОСТАНАВЛИВАЕМ ДЕМО-РЕЖИМ
+    if (isRealChatMode) {
+        // Очищаем таймеры и сообщения демо-режима
+        clearPreviewTimers();
+        previewChat.innerHTML = '';
+        // Сбрасываем статистику превью
+        currentPreviewMessages = [];
+        messageElements.clear();
+        previewStats.textContent = '💬 0';
         
+        // Показываем реальный чат
+        previewChat.style.display = 'none';
+        realChatContainer.style.display = 'flex';
+        toggleBtn.textContent = '🎨 Вернуться к превью';
+        toggleBtn.classList.add('toggle-btn-active');
+        previewTitle.textContent = '📺 Реальный чат';
+        
+        // Применяем настройки и подключаемся
+        applySettingsToRealChat();
         realChatReconnectAttempts = 0;
+        connectRealChat();
         
-        if (window.realChatTimers) {
-            window.realChatTimers.forEach(timer => clearTimeout(timer));
-            window.realChatTimers = [];
+        realChatMessages.innerHTML = '';
+        realChatEmpty.style.display = 'flex';
+        realChatStatus.textContent = 'Подключение...';
+        realChatStatus.style.color = '#ffa726';
+    } else {
+        // Возвращаем демо-режим
+        previewChat.style.display = 'flex';
+        realChatContainer.style.display = 'none';
+        toggleBtn.textContent = '📺 Показать реальный чат';
+        toggleBtn.classList.remove('toggle-btn-active');
+        previewTitle.textContent = 'Живое превью';
+        
+        // Закрываем реальный чат
+        if (realChatSocket) {
+            try {
+                realChatSocket.close();
+            } catch (e) {}
+            realChatSocket = null;
         }
         
-        if (isRealChatMode) {
-            previewChat.style.display = 'none';
-            realChatContainer.style.display = 'flex';
-            toggleBtn.textContent = '🎨 Вернуться к превью';
-            toggleBtn.classList.add('toggle-btn-active');
-            previewTitle.textContent = '📺 Реальный чат';
-            
-            applySettingsToRealChat();
-            connectRealChat();
-            
-            realChatMessages.innerHTML = '';
-            realChatEmpty.style.display = 'flex';
-            realChatStatus.textContent = 'Подключение...';
-            realChatStatus.style.color = '#ffa726';
-        } else {
-            previewChat.style.display = 'flex';
-            realChatContainer.style.display = 'none';
-            toggleBtn.textContent = '📺 Показать реальный чат';
-            toggleBtn.classList.remove('toggle-btn-active');
-            previewTitle.textContent = 'Живое превью';
-            
-            if (realChatSocket) {
-                try {
-                    realChatSocket.close();
-                } catch (e) {}
-                realChatSocket = null;
-            }
-        }
-    });
+        // Запускаем демо-режим заново
+        setTimeout(() => {
+            startPreview();
+        }, 300);
+    }
+});
 
     const originalGenerateUrl = generateUrl;
     generateUrl = function() {
