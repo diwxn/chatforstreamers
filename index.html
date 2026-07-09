@@ -3057,58 +3057,47 @@ function hexToRgb(hex) {
         console.log('📡 Статистика чата активна');
         console.log('🎮 Twitch Chat Overlay Configurator v3.4 — Улучшенная версия');
 
-        // ==========================================
-        // ПЕРЕКЛЮЧЕНИЕ МЕЖДУ ПРЕВЬЮ И РЕАЛЬНЫМ ЧАТОМ
-        // ==========================================
-        let isRealChatMode = false;
-        let realChatSocket = null;
-        let realChatReconnectAttempts = 0;
-        let realChatMaxReconnectAttempts = 5;
-        let isRemovingMessages = false;
-        let pendingMessages = [];
+// ==========================================
+// ПЕРЕКЛЮЧЕНИЕ МЕЖДУ ПРЕВЬЮ И РЕАЛЬНЫМ ЧАТОМ
+// ==========================================
+let isRealChatMode = false;
+let realChatSocket = null;
+let realChatReconnectAttempts = 0;
+let realChatMaxReconnectAttempts = 5;
+let isRemovingMessages = false;
+let pendingMessages = [];
 
-        const toggleBtn = document.getElementById('toggleChatBtn');
-        const realChatContainer = document.getElementById('realChatContainer');
-        const realChatMessages = document.getElementById('realChatMessages');
-        const realChatEmpty = document.getElementById('realChatEmpty');
-        const realChatStatus = document.getElementById('realChatStatus');
-        const previewTitle = document.getElementById('previewTitle');
+const toggleBtn = document.getElementById('toggleChatBtn');
+const realChatContainer = document.getElementById('realChatContainer');
+const realChatMessages = document.getElementById('realChatMessages');
+const realChatEmpty = document.getElementById('realChatEmpty');
+const realChatStatus = document.getElementById('realChatStatus');
+const previewTitle = document.getElementById('previewTitle');
 
-        function applySettingsToRealChat() {
-            const fontSizeVal = parseInt(fontSize.value) || 22;
-            const showTimeVal = showTime.checked;
-            const showAnimationsVal = showAnimations.checked;
-            const enterAnim = enterAnimation ? enterAnimation.value : 'slideUp';
+function applySettingsToRealChat() {
+    const fontSizeVal = parseInt(fontSize.value) || 22;
+    const showTimeVal = showTime.checked;
+    const showAnimationsVal = showAnimations.checked;
+    const enterAnim = enterAnimation ? enterAnimation.value : 'slideUp';
 
-            document.querySelectorAll('#realChatMessages .msg').forEach(el => {
-                el.style.fontSize = `${fontSizeVal}px`;
-
-                const timeSpan = el.querySelector('.time');
-                if (timeSpan) {
-                    timeSpan.style.display = showTimeVal ? 'inline' : 'none';
-                }
-
-                if (showAnimationsVal) {
-                    const activityClasses = [];
-                    if (el.classList.contains('activity')) activityClasses.push('activity');
-                    if (el.classList.contains('raid')) activityClasses.push('raid');
-                    if (el.classList.contains('first-message')) activityClasses.push('first-message');
-                    if (el.classList.contains('gift-sub')) activityClasses.push('gift-sub');
-                    if (el.classList.contains('vip-assign')) activityClasses.push('vip-assign');
-                    if (el.classList.contains('birthday')) activityClasses.push('birthday');
-                    if (el.classList.contains('mod-assign')) activityClasses.push('mod-assign');
-
-                    const oldClasses = ['enter-fade', 'enter-slideUp', 'enter-slideLeft', 'enter-scale', 'enter-bounce',
-                        'enter-glitch'
-                    ];
-                    oldClasses.forEach(cls => el.classList.remove(cls));
-
-                    el.classList.add(`enter-${enterAnim}`);
-                }
-            });
+    document.querySelectorAll('#realChatMessages .msg').forEach(el => {
+        el.style.fontSize = `${fontSizeVal}px`;
+        const timeSpan = el.querySelector('.time');
+        if (timeSpan) {
+            timeSpan.style.display = showTimeVal ? 'inline' : 'none';
         }
+        if (showAnimationsVal) {
+            const oldClasses = ['enter-fade', 'enter-slideUp', 'enter-slideLeft', 'enter-scale', 'enter-bounce', 'enter-glitch'];
+            oldClasses.forEach(cls => el.classList.remove(cls));
+            el.classList.add(`enter-${enterAnim}`);
+        }
+    });
+}
 
-        function connectRealChat() {
+// ==========================================
+// ПОДКЛЮЧЕНИЕ К РЕАЛЬНОМУ ЧАТУ (ИСПРАВЛЕННОЕ)
+// ==========================================
+function connectRealChat() {
     const channel = channelInput.value.trim() || '1diwan';
 
     if (realChatReconnectAttempts >= realChatMaxReconnectAttempts) {
@@ -3126,10 +3115,9 @@ function hexToRgb(hex) {
     }
 
     setTimeout(() => {
+        let socket;
         try {
-            // 🔥 СОЗДАЁМ НОВЫЙ СОКЕТ
-            const socket = new WebSocket("wss://irc-ws.chat.twitch.tv:443");
-            // 🔥 СОХРАНЯЕМ ЕГО В ГЛОБАЛЬНУЮ ПЕРЕМЕННУЮ
+            socket = new WebSocket("wss://irc-ws.chat.twitch.tv:443");
             realChatSocket = socket;
         } catch (e) {
             console.error('❌ Ошибка создания WebSocket:', e);
@@ -3151,7 +3139,6 @@ function hexToRgb(hex) {
             }
         }, 5000);
 
-        // 🔥 ИСПОЛЬЗУЕМ ЛОКАЛЬНУЮ ПЕРЕМЕННУЮ socket
         realChatSocket.onopen = () => {
             clearTimeout(connectionTimeout);
             console.log(`📺 Реальный чат подключен: #${channel}`);
@@ -3159,7 +3146,6 @@ function hexToRgb(hex) {
             realChatStatus.style.color = '#4caf50';
             realChatReconnectAttempts = 0;
 
-            // 🔥 ОТПРАВЛЯЕМ ЧЕРЕЗ ЛОКАЛЬНУЮ ПЕРЕМЕННУЮ socket
             socket.send("CAP REQ :twitch.tv/tags");
             socket.send("CAP REQ :twitch.tv/commands");
             socket.send("CAP REQ :twitch.tv/membership");
@@ -3171,7 +3157,6 @@ function hexToRgb(hex) {
         realChatSocket.onmessage = (event) => {
             const raw = event.data;
 
-            // 🔥 ОБРАБОТКА PING
             if (raw.startsWith('PING')) {
                 socket.send('PONG :tmi.twitch.tv');
                 console.log('🏓 PONG отправлен');
@@ -3180,7 +3165,36 @@ function hexToRgb(hex) {
 
             if (!raw.includes("PRIVMSG")) return;
 
-            // ... остальная обработка
+            const userMatch = raw.match(/display-name=([^;]*)/);
+            const loginMatch = raw.match(/:(\w+)!/);
+            const user = userMatch?.[1] || loginMatch?.[1] || "unknown";
+
+            const tmiTarget = `PRIVMSG #${channel} :`;
+            const index = raw.indexOf(tmiTarget);
+            if (index === -1) return;
+
+            const text = raw.substring(index + tmiTarget.length).trim();
+            const colorMatch = raw.match(/color=([^;]*)/);
+            const color = colorMatch?.[1] || '#ffffff';
+            const badgesMatch = raw.match(/badges=([^;]*)/);
+            const badges = badgesMatch?.[1] || "";
+
+            let twitchEmotesRaw = "";
+            const tags = raw.split(";");
+            for (let t of tags) {
+                if (t.startsWith("emotes=")) {
+                    twitchEmotesRaw = t.split("=")[1] || "";
+                    break;
+                }
+            }
+
+            const activity = detectActivity ? detectActivity(text, user, badges) : { class: '' };
+
+            if (typeof processRealMessageForStats === 'function') {
+                processRealMessageForStats(user, text, badges);
+            }
+
+            addRealMessage(user, text, color, badges, activity, twitchEmotesRaw);
         };
 
         realChatSocket.onclose = (event) => {
@@ -3208,279 +3222,272 @@ function hexToRgb(hex) {
     }, 500);
 }
 
+function scheduleReconnect() {
+    if (!isRealChatMode) return;
+    if (realChatReconnectAttempts >= realChatMaxReconnectAttempts) {
+        realChatStatus.textContent = '❌ Не удалось подключиться';
+        realChatStatus.style.color = '#ef5350';
+        return;
+    }
 
-        function scheduleReconnect() {
-            if (!isRealChatMode) return;
-            if (realChatReconnectAttempts >= realChatMaxReconnectAttempts) {
-                realChatStatus.textContent = '❌ Не удалось подключиться';
-                realChatStatus.style.color = '#ef5350';
-                return;
-            }
+    const delay = Math.min(10000 * Math.pow(1.5, realChatReconnectAttempts), 60000);
+    realChatStatus.textContent = `Переподключение через ${Math.round(delay/1000)}с...`;
+    realChatStatus.style.color = '#ffa726';
+    console.log(`📺 Переподключение через ${delay}ms... (попытка ${realChatReconnectAttempts})`);
 
-            const delay = Math.min(10000 * Math.pow(1.5, realChatReconnectAttempts), 60000);
-            realChatStatus.textContent = `Переподключение через ${Math.round(delay/1000)}с...`;
-            realChatStatus.style.color = '#ffa726';
-            console.log(`📺 Переподключение через ${delay}ms... (попытка ${realChatReconnectAttempts})`);
-
-            setTimeout(() => {
-                if (isRealChatMode) {
-                    connectRealChat();
-                }
-            }, delay);
+    setTimeout(() => {
+        if (isRealChatMode) {
+            connectRealChat();
         }
+    }, delay);
+}
 
-        function addRealMessage(user, rawText, color, badges, activity, twitchEmotesRaw) {
-            realChatEmpty.style.display = 'none';
+// ==========================================
+// ДОБАВЛЕНИЕ СООБЩЕНИЯ В РЕАЛЬНЫЙ ЧАТ
+// ==========================================
+function addRealMessage(user, rawText, color, badges, activity, twitchEmotesRaw) {
+    realChatEmpty.style.display = 'none';
 
-            if (isRemovingMessages) {
-                pendingMessages.push({ user, rawText, color, badges, activity, twitchEmotesRaw });
-                console.log(`⏳ Сообщение в очереди (${pendingMessages.length})`);
-                return;
-            }
+    if (isRemovingMessages) {
+        pendingMessages.push({ user, rawText, color, badges, activity, twitchEmotesRaw });
+        console.log(`⏳ Сообщение в очереди (${pendingMessages.length})`);
+        return;
+    }
 
-            const el = document.createElement('div');
-            el.className = 'msg';
+    const el = document.createElement('div');
+    el.className = 'msg';
 
-            if (badges && badges.includes('broadcaster')) {
-                el.classList.add('broadcaster');
-            }
-            if (badges && badges.includes('moderator')) {
-                el.classList.add('moderator');
-            }
-            if (badges && badges.includes('vip')) {
-                el.classList.add('vip');
-            }
+    if (badges && badges.includes('broadcaster')) {
+        el.classList.add('broadcaster');
+    }
+    if (badges && badges.includes('moderator')) {
+        el.classList.add('moderator');
+    }
+    if (badges && badges.includes('vip')) {
+        el.classList.add('vip');
+    }
 
-            if (activity && activity.class) {
-                el.classList.add(activity.class);
-                el.classList.add('activity');
-            }
+    if (activity && activity.class) {
+        el.classList.add(activity.class);
+        el.classList.add('activity');
+    }
 
-            const showTimeVal = showTime.checked;
-            const fontSizeVal = parseInt(fontSize.value) || 22;
-            const showAnimationsVal = showAnimations.checked;
-            const enterAnim = enterAnimation ? enterAnimation.value : 'slideUp';
-            const exitAnim = exitAnimation ? exitAnimation.value : 'slideOut';
-            const maxMessagesVal = parseInt(maxMessages.value) || 10;
+    const showTimeVal = showTime.checked;
+    const fontSizeVal = parseInt(fontSize.value) || 22;
+    const showAnimationsVal = showAnimations.checked;
+    const enterAnim = enterAnimation ? enterAnimation.value : 'slideUp';
+    const exitAnim = exitAnimation ? exitAnimation.value : 'slideOut';
+    const maxMessagesVal = parseInt(maxMessages.value) || 10;
 
-            el.style.fontSize = `${fontSizeVal}px`;
+    el.style.fontSize = `${fontSizeVal}px`;
 
-            if (showAnimationsVal) {
-                el.classList.add(`enter-${enterAnim}`);
-            }
+    if (showAnimationsVal) {
+        el.classList.add(`enter-${enterAnim}`);
+    }
 
-            const now = new Date();
-            const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    const now = new Date();
+    const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
-            let badgeHTML = '';
-            if (badges) {
-                const badgeList = badges.split(',');
-                badgeList.forEach(b => {
-                    const parts = b.split('/');
-                    const set = parts[0];
-                    const version = parts[1] || '1';
+    let badgeHTML = '';
+    if (badges) {
+        const badgeList = badges.split(',');
+        badgeList.forEach(b => {
+            const parts = b.split('/');
+            const set = parts[0];
+            const version = parts[1] || '1';
 
-                    const url = channelBadgeMap?.[set]?.[version] || badgeMap?.[set]?.[version];
-                    if (url) {
-                        badgeHTML +=
-                            `<img class="badge" src="${url}" alt="${set}" title="${set}" style="width:18px; height:18px; vertical-align:middle; margin-right:2px; display:inline-block; border-radius:4px;">`;
-                    } else {
-                        const fallbackIcons = {
-                            'subscriber': '💜',
-                            'broadcaster': '🎤',
-                            'moderator': '🛡️',
-                            'vip': '👑',
-                            'partner': '⭐',
-                            'founder': '👑',
-                            'bits': '💎',
-                            'staff': '🔧',
-                            'admin': '⚡',
-                            'global_mod': '🌍'
-                        };
-                        const icon = fallbackIcons[set] || '●';
-                        if (set === 'subscriber' || set === 'broadcaster' || set === 'moderator' || set === 'vip') {
-                            badgeHTML +=
-                                `<span class="badge-fallback" style="display:inline-block; margin-right:2px; font-size:0.9em; vertical-align:middle;">${icon}</span>`;
-                        }
-                    }
-                });
-            }
-
-            const timeHTML = showTimeVal ? `<span class="time">[${timeStr}]</span>` : '';
-
-            let parsedHTML = rawText;
-            if (typeof parseAllEmotes === 'function') {
-                parsedHTML = parseAllEmotes(rawText, twitchEmotesRaw || '');
-            }
-
-            let activityIcon = '';
-            if (activity && activity.type === 'first-message') {
-                activityIcon = '<span class="first-icon">🌸</span>';
-            }
-
-            el.innerHTML = `
-                ${timeHTML}
-                ${badgeHTML}
-                ${activityIcon}
-                <span class="username" style="color:${color}">${escapeHTML(user)}</span>: ${parsedHTML}
-            `;
-
-            realChatMessages.prepend(el);
-
-            const currentCount = realChatMessages.children.length;
-            if (currentCount > maxMessagesVal) {
-                const toRemove = currentCount - maxMessagesVal;
-                isRemovingMessages = true;
-                removeOldMessages(toRemove, showAnimationsVal, enterAnim, exitAnim, () => {
-                    isRemovingMessages = false;
-                    processPendingMessages();
-                });
-            }
-
-            const hideSec = parseInt(hideTime.value) || 20;
-            if (hideSec > 0 && showAnimationsVal) {
-                const timer = setTimeout(() => {
-                    if (el.isConnected) {
-                        el.classList.remove(`enter-${enterAnim}`);
-                        el.classList.add(`exit-${exitAnim}`);
-                        setTimeout(() => {
-                            if (el.isConnected) {
-                                el.remove();
-                            }
-                        }, 500);
-                    }
-                }, hideSec * 1000);
-                if (!window.realChatTimers) window.realChatTimers = [];
-                window.realChatTimers.push(timer);
-            }
-        }
-
-        function processPendingMessages() {
-            if (pendingMessages.length === 0) {
-                isRemovingMessages = false;
-                return;
-            }
-
-            // Обрабатываем до 10 сообщений за раз
-            const batchSize = Math.min(pendingMessages.length, 10);
-            const batch = pendingMessages.splice(0, batchSize);
-
-            batch.forEach(msg => {
-                addRealMessage(msg.user, msg.rawText, msg.color, msg.badges, msg.activity, msg.twitchEmotesRaw);
-            });
-
-            // Если остались сообщения — продолжаем
-            if (pendingMessages.length > 0) {
-                setTimeout(processPendingMessages, 50);
+            const url = channelBadgeMap?.[set]?.[version] || badgeMap?.[set]?.[version];
+            if (url) {
+                badgeHTML += `<img class="badge" src="${url}" alt="${set}" title="${set}" style="width:18px; height:18px; vertical-align:middle; margin-right:2px; display:inline-block; border-radius:4px;">`;
             } else {
-                isRemovingMessages = false;
-            }
-        }
-
-        function removeOldMessages(count, showAnimations, enterAnim, exitAnim, callback) {
-            if (count <= 0) {
-                isRemovingMessages = false;
-                if (callback) callback();
-                return;
-            }
-
-            let removed = 0;
-
-            function removeNext() {
-                if (removed >= count) {
-                    isRemovingMessages = false;
-                    if (callback) callback();
-                    return;
+                const fallbackIcons = {
+                    'subscriber': '💜',
+                    'broadcaster': '🎤',
+                    'moderator': '🛡️',
+                    'vip': '👑',
+                    'partner': '⭐',
+                    'founder': '👑',
+                    'bits': '💎',
+                    'staff': '🔧',
+                    'admin': '⚡',
+                    'global_mod': '🌍'
+                };
+                const icon = fallbackIcons[set] || '●';
+                if (set === 'subscriber' || set === 'broadcaster' || set === 'moderator' || set === 'vip') {
+                    badgeHTML += `<span class="badge-fallback" style="display:inline-block; margin-right:2px; font-size:0.9em; vertical-align:middle;">${icon}</span>`;
                 }
-
-                const lastChild = realChatMessages.lastElementChild;
-                if (!lastChild) {
-                    isRemovingMessages = false;
-                    if (callback) callback();
-                    return;
-                }
-
-                if (showAnimations) {
-                    lastChild.classList.remove(`enter-${enterAnim}`);
-                    lastChild.classList.add(`exit-${exitAnim}`);
-                    setTimeout(() => {
-                        if (lastChild.isConnected) {
-                            lastChild.remove();
-                        }
-                        removed++;
-                        setTimeout(removeNext, 50);
-                    }, 200);
-                } else {
-                    lastChild.remove();
-                    removed++;
-                    setTimeout(removeNext, 10);
-                }
-            }
-
-            removeNext();
-        }
-
-        toggleBtn.addEventListener('click', () => {
-            isRealChatMode = !isRealChatMode;
-
-            // 🔥 ОСТАНАВЛИВАЕМ ДЕМО-РЕЖИМ
-            if (isRealChatMode) {
-                // Очищаем таймеры и сообщения демо-режима
-                clearPreviewTimers();
-                previewChat.innerHTML = '';
-                // Сбрасываем статистику превью
-                currentPreviewMessages = [];
-                messageElements.clear();
-                previewStats.textContent = '💬 0';
-
-                // Показываем реальный чат
-                previewChat.style.display = 'none';
-                realChatContainer.style.display = 'flex';
-                toggleBtn.textContent = '🎨 Вернуться к превью';
-                toggleBtn.classList.add('toggle-btn-active');
-                previewTitle.textContent = '📺 Реальный чат';
-
-                // Применяем настройки и подключаемся
-                applySettingsToRealChat();
-                realChatReconnectAttempts = 0;
-                connectRealChat();
-
-                realChatMessages.innerHTML = '';
-                realChatEmpty.style.display = 'flex';
-                realChatStatus.textContent = 'Подключение...';
-                realChatStatus.style.color = '#ffa726';
-            } else {
-                // Возвращаем демо-режим
-                previewChat.style.display = 'flex';
-                realChatContainer.style.display = 'none';
-                toggleBtn.textContent = '📺 Показать реальный чат';
-                toggleBtn.classList.remove('toggle-btn-active');
-                previewTitle.textContent = 'Живое превью';
-
-                // Закрываем реальный чат
-                if (realChatSocket) {
-                    try {
-                        realChatSocket.close();
-                    } catch (e) {}
-                    realChatSocket = null;
-                }
-
-                // Запускаем демо-режим заново
-                setTimeout(() => {
-                    startPreview();
-                }, 300);
             }
         });
+    }
 
-        const originalGenerateUrl = generateUrl;
-        generateUrl = function() {
-            originalGenerateUrl();
-            if (isRealChatMode) {
-                connectRealChat();
+    const timeHTML = showTimeVal ? `<span class="time">[${timeStr}]</span>` : '';
+
+    let parsedHTML = rawText;
+    if (typeof parseAllEmotes === 'function') {
+        parsedHTML = parseAllEmotes(rawText, twitchEmotesRaw || '');
+    }
+
+    let activityIcon = '';
+    if (activity && activity.type === 'first-message') {
+        activityIcon = '<span class="first-icon">🌸</span>';
+    }
+
+    el.innerHTML = `
+        ${timeHTML}
+        ${badgeHTML}
+        ${activityIcon}
+        <span class="username" style="color:${color}">${escapeHTML(user)}</span>: ${parsedHTML}
+    `;
+
+    realChatMessages.prepend(el);
+
+    const currentCount = realChatMessages.children.length;
+    if (currentCount > maxMessagesVal) {
+        const toRemove = currentCount - maxMessagesVal;
+        isRemovingMessages = true;
+        removeOldMessages(toRemove, showAnimationsVal, enterAnim, exitAnim, () => {
+            isRemovingMessages = false;
+            processPendingMessages();
+        });
+    }
+
+    const hideSec = parseInt(hideTime.value) || 20;
+    if (hideSec > 0 && showAnimationsVal) {
+        const timer = setTimeout(() => {
+            if (el.isConnected) {
+                el.classList.remove(`enter-${enterAnim}`);
+                el.classList.add(`exit-${exitAnim}`);
+                setTimeout(() => {
+                    if (el.isConnected) {
+                        el.remove();
+                    }
+                }, 500);
             }
-        };
+        }, hideSec * 1000);
+        if (!window.realChatTimers) window.realChatTimers = [];
+        window.realChatTimers.push(timer);
+    }
+}
 
-        console.log('📺 Режим реального чата готов');
+function processPendingMessages() {
+    if (pendingMessages.length === 0) {
+        isRemovingMessages = false;
+        return;
+    }
+
+    const batchSize = Math.min(pendingMessages.length, 10);
+    const batch = pendingMessages.splice(0, batchSize);
+
+    batch.forEach(msg => {
+        addRealMessage(msg.user, msg.rawText, msg.color, msg.badges, msg.activity, msg.twitchEmotesRaw);
+    });
+
+    if (pendingMessages.length > 0) {
+        setTimeout(processPendingMessages, 50);
+    } else {
+        isRemovingMessages = false;
+    }
+}
+
+function removeOldMessages(count, showAnimations, enterAnim, exitAnim, callback) {
+    if (count <= 0) {
+        isRemovingMessages = false;
+        if (callback) callback();
+        return;
+    }
+
+    let removed = 0;
+
+    function removeNext() {
+        if (removed >= count) {
+            isRemovingMessages = false;
+            if (callback) callback();
+            return;
+        }
+
+        const lastChild = realChatMessages.lastElementChild;
+        if (!lastChild) {
+            isRemovingMessages = false;
+            if (callback) callback();
+            return;
+        }
+
+        if (showAnimations) {
+            lastChild.classList.remove(`enter-${enterAnim}`);
+            lastChild.classList.add(`exit-${exitAnim}`);
+            setTimeout(() => {
+                if (lastChild.isConnected) {
+                    lastChild.remove();
+                }
+                removed++;
+                setTimeout(removeNext, 50);
+            }, 200);
+        } else {
+            lastChild.remove();
+            removed++;
+            setTimeout(removeNext, 10);
+        }
+    }
+
+    removeNext();
+}
+
+// ==========================================
+// ОБРАБОТЧИК КНОПКИ ПЕРЕКЛЮЧЕНИЯ ЧАТА
+// ==========================================
+toggleBtn.addEventListener('click', () => {
+    isRealChatMode = !isRealChatMode;
+
+    if (isRealChatMode) {
+        clearPreviewTimers();
+        previewChat.innerHTML = '';
+        currentPreviewMessages = [];
+        messageElements.clear();
+        previewStats.textContent = '💬 0';
+
+        previewChat.style.display = 'none';
+        realChatContainer.style.display = 'flex';
+        toggleBtn.textContent = '🎨 Вернуться к превью';
+        toggleBtn.classList.add('toggle-btn-active');
+        previewTitle.textContent = '📺 Реальный чат';
+
+        applySettingsToRealChat();
+        realChatReconnectAttempts = 0;
+        connectRealChat();
+
+        realChatMessages.innerHTML = '';
+        realChatEmpty.style.display = 'flex';
+        realChatStatus.textContent = 'Подключение...';
+        realChatStatus.style.color = '#ffa726';
+    } else {
+        previewChat.style.display = 'flex';
+        realChatContainer.style.display = 'none';
+        toggleBtn.textContent = '📺 Показать реальный чат';
+        toggleBtn.classList.remove('toggle-btn-active');
+        previewTitle.textContent = 'Живое превью';
+
+        if (realChatSocket) {
+            try {
+                realChatSocket.close();
+            } catch (e) {}
+            realChatSocket = null;
+        }
+
+        setTimeout(() => {
+            startPreview();
+        }, 300);
+    }
+});
+
+const originalGenerateUrl = generateUrl;
+generateUrl = function() {
+    originalGenerateUrl();
+    if (isRealChatMode) {
+        connectRealChat();
+    }
+};
+
+console.log('📺 Режим реального чата готов');
     </script>
 
 </body>
