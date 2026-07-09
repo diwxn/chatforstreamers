@@ -40,8 +40,18 @@ const FONT_WEIGHT = parseInt(urlParams.get('fontWeight')) || 400;
 const LINE_HEIGHT = parseFloat(urlParams.get('lineHeight')) || 1.3;
 const ANIMATION_SPEED = parseInt(urlParams.get('animationSpeed')) || 300;
 
-// 🔥 ПРИМЕНЯЕМ НАСТРОЙКИ К CSS-ПЕРЕМЕННЫМ
-// 🔥 Применяем фон к веб-версии (chat.html)
+// 🔥 ОБЪЯВЛЯЕМ shadowMap ДО ИСПОЛЬЗОВАНИЯ
+const shadowMap = {
+    'none': 'none',
+    'light': '0 2px 8px rgba(0,0,0,0.15)',
+    'medium': '0 4px 16px rgba(0,0,0,0.3)',
+    'heavy': '0 8px 32px rgba(0,0,0,0.5)'
+};
+
+// Применяем размер шрифта к чату через CSS-переменную
+document.documentElement.style.setProperty('--chat-font-size', `${FONT_SIZE}px`);
+
+// Применяем настройки внешнего вида к CSS
 document.documentElement.style.setProperty('--chat-bg', `#${BG_COLOR}`);
 document.documentElement.style.setProperty('--chat-text', `#${TEXT_COLOR}`);
 document.documentElement.style.setProperty('--chat-bg-opacity', BG_OPACITY / 100);
@@ -51,9 +61,10 @@ document.documentElement.style.setProperty('--chat-font-family', FONT_FAMILY);
 document.documentElement.style.setProperty('--chat-font-weight', FONT_WEIGHT);
 document.documentElement.style.setProperty('--chat-line-height', LINE_HEIGHT);
 document.documentElement.style.setProperty('--chat-animation-speed', `${ANIMATION_SPEED}ms`);
+
+// Настройка тени (используем уже объявленный shadowMap)
 document.documentElement.style.setProperty('--chat-shadow', shadowMap[MESSAGE_SHADOW] || 'none');
 
-// 🔥 Применяем к #chat напрямую (для веб-версии)
 // 🔥 ПРЯМОЕ ПРИМЕНЕНИЕ К ВЕБ-ВЕРСИИ (chat.html)
 const chatElement = document.getElementById('chat');
 if (chatElement) {
@@ -65,31 +76,25 @@ if (chatElement) {
     chatElement.style.lineHeight = LINE_HEIGHT;
 }
 
-console.log('✅ Фон применён к веб-версии');
-
-// Настройка тени
-const shadowMap = {
-    'none': 'none',
-    'light': '0 2px 8px rgba(0,0,0,0.15)',
-    'medium': '0 4px 16px rgba(0,0,0,0.3)',
-    'heavy': '0 8px 32px rgba(0,0,0,0.5)'
-};
-document.documentElement.style.setProperty('--chat-shadow', shadowMap[MESSAGE_SHADOW] || 'none');
-
 console.log('✅ Настройки применены:', {
     bgColor: BG_COLOR,
     textColor: TEXT_COLOR,
-    borderRadius: BORDER_RADIUS,
     fontFamily: FONT_FAMILY,
-    fontWeight: FONT_WEIGHT,
-    animationSpeed: ANIMATION_SPEED
+    fontWeight: FONT_WEIGHT
 });
+
+// ==========================================
+// ВСПОМОГАТЕЛЬНАЯ ФУНКЦИЯ (HEX → RGB)
+// ==========================================
+function hexToRgb(hex) {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : '14, 14, 16';
+}
 
 // ==========================================
 // ОСТАЛЬНОЙ КОД (без изменений)
 // ==========================================
 const emoteCache = new Map();
-
 let reconnectAttempts = 0;
 let socket = null;
 
