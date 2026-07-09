@@ -3114,8 +3114,10 @@ function connectRealChat() {
         realChatSocket = null;
     }
 
+    // 🔥 ОБЪЯВЛЯЕМ socket ЗДЕСЬ (в замыкании)
+    let socket;
+
     setTimeout(() => {
-        let socket;
         try {
             socket = new WebSocket("wss://irc-ws.chat.twitch.tv:443");
             realChatSocket = socket;
@@ -3146,6 +3148,7 @@ function connectRealChat() {
             realChatStatus.style.color = '#4caf50';
             realChatReconnectAttempts = 0;
 
+            // 🔥 ТЕПЕРЬ socket ДОСТУПЕН
             socket.send("CAP REQ :twitch.tv/tags");
             socket.send("CAP REQ :twitch.tv/commands");
             socket.send("CAP REQ :twitch.tv/membership");
