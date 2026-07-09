@@ -3109,128 +3109,105 @@ function hexToRgb(hex) {
         }
 
         function connectRealChat() {
-            const channel = channelInput.value.trim() || '1diwan';
+    const channel = channelInput.value.trim() || '1diwan';
 
-            if (realChatReconnectAttempts >= realChatMaxReconnectAttempts) {
-                realChatStatus.textContent = '❌ Не удалось подключиться';
-                realChatStatus.style.color = '#ef5350';
-                console.log('❌ Превышено количество попыток подключения к реальному чату');
-                return;
-            }
+    if (realChatReconnectAttempts >= realChatMaxReconnectAttempts) {
+        realChatStatus.textContent = '❌ Не удалось подключиться';
+        realChatStatus.style.color = '#ef5350';
+        console.log('❌ Превышено количество попыток подключения к реальному чату');
+        return;
+    }
 
-            if (realChatSocket) {
+    if (realChatSocket) {
+        try {
+            realChatSocket.close();
+        } catch (e) {}
+        realChatSocket = null;
+    }
+
+    setTimeout(() => {
+        try {
+            // 🔥 СОЗДАЁМ НОВЫЙ СОКЕТ
+            const socket = new WebSocket("wss://irc-ws.chat.twitch.tv:443");
+            // 🔥 СОХРАНЯЕМ ЕГО В ГЛОБАЛЬНУЮ ПЕРЕМЕННУЮ
+            realChatSocket = socket;
+        } catch (e) {
+            console.error('❌ Ошибка создания WebSocket:', e);
+            realChatStatus.textContent = '❌ Ошибка создания соединения';
+            realChatStatus.style.color = '#ef5350';
+            return;
+        }
+
+        let connectionTimeout = setTimeout(() => {
+            if (realChatSocket && realChatSocket.readyState !== WebSocket.OPEN) {
+                console.warn('⏱ Таймаут подключения к реальному чату');
+                realChatStatus.textContent = '⏱ Таймаут';
+                realChatStatus.style.color = '#ffa726';
                 try {
                     realChatSocket.close();
                 } catch (e) {}
                 realChatSocket = null;
+                scheduleReconnect();
+            }
+        }, 5000);
+
+        // 🔥 ИСПОЛЬЗУЕМ ЛОКАЛЬНУЮ ПЕРЕМЕННУЮ socket
+        realChatSocket.onopen = () => {
+            clearTimeout(connectionTimeout);
+            console.log(`📺 Реальный чат подключен: #${channel}`);
+            realChatStatus.textContent = 'Подключено ✅';
+            realChatStatus.style.color = '#4caf50';
+            realChatReconnectAttempts = 0;
+
+            // 🔥 ОТПРАВЛЯЕМ ЧЕРЕЗ ЛОКАЛЬНУЮ ПЕРЕМЕННУЮ socket
+            socket.send("CAP REQ :twitch.tv/tags");
+            socket.send("CAP REQ :twitch.tv/commands");
+            socket.send("CAP REQ :twitch.tv/membership");
+            socket.send("PASS SCHMOOPIIE");
+            socket.send("NICK justinfan" + Math.floor(10000 + Math.random() * 90000));
+            socket.send(`JOIN #${channel}`);
+        };
+
+        realChatSocket.onmessage = (event) => {
+            const raw = event.data;
+
+            // 🔥 ОБРАБОТКА PING
+            if (raw.startsWith('PING')) {
+                socket.send('PONG :tmi.twitch.tv');
+                console.log('🏓 PONG отправлен');
+                return;
             }
 
-            setTimeout(() => {
-                try {
-                    realChatSocket = new WebSocket("wss://irc-ws.chat.twitch.tv:443");
-                } catch (e) {
-                    console.error('❌ Ошибка создания WebSocket:', e);
-                    realChatStatus.textContent = '❌ Ошибка создания соединения';
-                    realChatStatus.style.color = '#ef5350';
-                    return;
-                }
+            if (!raw.includes("PRIVMSG")) return;
 
-                let connectionTimeout = setTimeout(() => {
-                    if (realChatSocket && realChatSocket.readyState !== WebSocket.OPEN) {
-                        console.warn('⏱ Таймаут подключения к реальному чату');
-                        realChatStatus.textContent = '⏱ Таймаут';
-                        realChatStatus.style.color = '#ffa726';
-                        try {
-                            realChatSocket.close();
-                        } catch (e) {}
-                        realChatSocket = null;
-                        scheduleReconnect();
-                    }
-                }, 5000);
+            // ... остальная обработка
+        };
 
-                realChatSocket.onopen = () => {
-                    clearTimeout(connectionTimeout);
-                    console.log(`📺 Реальный чат подключен: #${channel}`);
-                    realChatStatus.textContent = 'Подключено ✅';
-                    realChatStatus.style.color = '#4caf50';
-                    realChatReconnectAttempts = 0;
+        realChatSocket.onclose = (event) => {
+            clearTimeout(connectionTimeout);
+            console.log(`📺 Реальный чат отключен. Код: ${event.code}, причина: ${event.reason}`);
 
-                    realChatSocket.send("CAP REQ :twitch.tv/tags");
-                    realChatSocket.send("CAP REQ :twitch.tv/commands");
-                    realChatSocket.send("CAP REQ :twitch.tv/membership");
-                    realChatSocket.send("PASS SCHMOOPIIE");
-                    realChatSocket.send("NICK justinfan" + Math.floor(10000 + Math.random() * 90000));
-                    realChatSocket.send(`JOIN #${channel}`);
-                };
+            if (event.code === 1000) {
+                realChatStatus.textContent = 'Отключено';
+                realChatStatus.style.color = '#888';
+                return;
+            }
 
-                realChatSocket.onmessage = (event) => {
-                    const raw = event.data;
+            if (!event.wasClean && isRealChatMode) {
+                realChatReconnectAttempts++;
+                scheduleReconnect();
+            }
+        };
 
-                    // 🔥 ОБРАБОТКА PING
-                    if (raw.startsWith('PING')) {
-                        realChatSocket.send('PONG :tmi.twitch.tv');
-                        console.log('🏓 PONG отправлен');
-                        return;
-                    }
+        realChatSocket.onerror = (err) => {
+            clearTimeout(connectionTimeout);
+            console.error('📺 Ошибка реального чата:', err);
+            realChatStatus.textContent = '⚠️ Ошибка';
+            realChatStatus.style.color = '#ffa726';
+        };
+    }, 500);
+}
 
-                    if (!raw.includes("PRIVMSG")) return;
-
-                    const userMatch = raw.match(/display-name=([^;]*)/);
-                    const loginMatch = raw.match(/:(\w+)!/);
-                    const user = userMatch?.[1] || loginMatch?.[1] || "unknown";
-
-                    const tmiTarget = `PRIVMSG #${channel} :`;
-                    const index = raw.indexOf(tmiTarget);
-                    if (index === -1) return;
-
-                    const text = raw.substring(index + tmiTarget.length).trim();
-                    const colorMatch = raw.match(/color=([^;]*)/);
-                    const color = colorMatch?.[1] || '#ffffff';
-                    const badgesMatch = raw.match(/badges=([^;]*)/);
-                    const badges = badgesMatch?.[1] || "";
-
-                    let twitchEmotesRaw = "";
-                    const tags = raw.split(";");
-                    for (let t of tags) {
-                        if (t.startsWith("emotes=")) {
-                            twitchEmotesRaw = t.split("=")[1] || "";
-                            break;
-                        }
-                    }
-
-                    const activity = detectActivity ? detectActivity(text, user, badges) : { class: '' };
-
-                    if (typeof processRealMessageForStats === 'function') {
-                        processRealMessageForStats(user, text, badges);
-                    }
-
-                    addRealMessage(user, text, color, badges, activity, twitchEmotesRaw);
-                };
-
-                realChatSocket.onclose = (event) => {
-                    clearTimeout(connectionTimeout);
-                    console.log(`📺 Реальный чат отключен. Код: ${event.code}, причина: ${event.reason}`);
-
-                    if (event.code === 1000) {
-                        realChatStatus.textContent = 'Отключено';
-                        realChatStatus.style.color = '#888';
-                        return;
-                    }
-
-                    if (!event.wasClean && isRealChatMode) {
-                        realChatReconnectAttempts++;
-                        scheduleReconnect();
-                    }
-                };
-
-                realChatSocket.onerror = (err) => {
-                    clearTimeout(connectionTimeout);
-                    console.error('📺 Ошибка реального чата:', err);
-                    realChatStatus.textContent = '⚠️ Ошибка';
-                    realChatStatus.style.color = '#ffa726';
-                };
-            }, 500);
-        }
 
         function scheduleReconnect() {
             if (!isRealChatMode) return;
